@@ -31,7 +31,6 @@
             min-height: 100vh;
         }
 
-        /* Header */
         .header {
             background: var(--card-background);
             border-bottom: 1px solid var(--border-color);
@@ -99,36 +98,6 @@
 
         .card-content {
             padding: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 0.625rem 0.875rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.9375rem;
-            color: var(--text-primary);
-            background: var(--card-background);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .form-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.1);
         }
 
         .upload-area {
@@ -318,6 +287,11 @@
             height: 16px;
         }
 
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 640px) {
             .header {
                 padding: 1rem;
@@ -364,12 +338,11 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="header-content">
             <div class="logo">
                 <div class="logo-icon">R</div>
-                <span>Sistema de Relatórios</span>
+                <span>Tratamento-de-Dados</span>
             </div>
         </div>
     </header>
@@ -378,10 +351,9 @@
         <div class="upload-card">
             <div class="card-header">
                 <h2>Upload de Arquivo</h2>
-                <p>Selecione o tipo de relatório e faça o upload do arquivo Excel</p>
+                <p>Faça o upload do arquivo Excel para processamento</p>
             </div>
             <div class="card-content">
-                <!-- Upload Area -->
                 <div id="uploadArea" class="upload-area">
                     <div class="upload-icon">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,7 +368,6 @@
                     <input type="file" id="fileInput" accept=".xlsx,.xls" />
                 </div>
 
-                <!-- File Preview -->
                 <div id="filePreview" class="file-preview">
                     <div class="file-info">
                         <div class="file-icon">
@@ -417,7 +388,6 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="action-buttons">
                     <button class="btn btn-cancel" id="cancelBtn">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -437,7 +407,6 @@
     </div>
 
     <script>
-        // Elements
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const filePreview = document.getElementById('filePreview');
@@ -449,25 +418,15 @@
 
         let selectedFile = null;
 
-        // Click to upload
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
 
-        // File selection
-        fileInput.addEventListener('change', (e) => {
-            handleFileSelect(e.target.files[0]);
-        });
-
-        // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('drag-over');
         });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
 
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -475,11 +434,9 @@
             handleFileSelect(e.dataTransfer.files[0]);
         });
 
-        // Handle file selection
         function handleFileSelect(file) {
             if (!file) return;
 
-            // Validate file type
             const validTypes = [
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'application/vnd.ms-excel'
@@ -490,7 +447,6 @@
                 return;
             }
 
-            // Validate file size (20MB)
             if (file.size > 20 * 1024 * 1024) {
                 alert('O arquivo excede o tamanho máximo de 20MB');
                 return;
@@ -501,10 +457,9 @@
             fileSize.textContent = formatFileSize(file.size);
             filePreview.classList.add('active');
             uploadArea.style.display = 'none';
-            checkUploadReady();
+            uploadBtn.disabled = false;
         }
 
-        // Remove file
         removeFileBtn.addEventListener('click', () => {
             selectedFile = null;
             fileInput.value = '';
@@ -513,12 +468,6 @@
             uploadBtn.disabled = true;
         });
 
-        // Check if ready to upload
-        function checkUploadReady() {
-            uploadBtn.disabled = !selectedFile;
-        }
-
-        // Upload button
         uploadBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
 
@@ -530,13 +479,11 @@
                 Processando...
             `;
 
-            // Create FormData
             const formData = new FormData();
             formData.append('file', selectedFile);
 
             try {
-                // TODO: Replace with your N8N webhook URL
-                const webhookURL = 'https://seu-n8n.com/webhook/upload-relatorio';
+                const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/tratamento-de-dados';
                 
                 const response = await fetch(webhookURL, {
                     method: 'POST',
@@ -561,12 +508,8 @@
             }
         });
 
-        // Cancel button
-        cancelBtn.addEventListener('click', () => {
-            resetForm();
-        });
+        cancelBtn.addEventListener('click', () => resetForm());
 
-        // Reset form
         function resetForm() {
             selectedFile = null;
             fileInput.value = '';
@@ -581,7 +524,6 @@
             `;
         }
 
-        // Format file size
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -590,12 +532,11 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
     </script>
-    
-    <style>
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-    </style>
+
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
 </body>
 </html>
