@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Arquivo</title>
+    <title>Upload de Arquivos - Processamento Paralelo</title>
     <style>
         * {
             margin: 0;
@@ -21,6 +21,8 @@
             --text-secondary: #475569;
             --border-color: #e2e8f0;
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --success-color: #10b981;
+            --error-color: #ef4444;
         }
 
         body {
@@ -39,7 +41,7 @@
         }
 
         .header-content {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
@@ -66,7 +68,7 @@
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             margin: 2rem auto;
             padding: 0 2rem;
         }
@@ -94,6 +96,17 @@
         .card-header p {
             font-size: 0.875rem;
             color: var(--text-secondary);
+        }
+
+        .file-counter {
+            display: inline-block;
+            margin-left: 0.5rem;
+            padding: 0.125rem 0.5rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .card-content {
@@ -160,22 +173,29 @@
             display: none;
         }
 
-        .file-preview {
+        .files-list {
             display: none;
+            margin-top: 1rem;
+        }
+
+        .files-list.active {
+            display: block;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             padding: 1rem;
             background: var(--background);
             border-radius: 6px;
             border: 1px solid var(--border-color);
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
         }
 
-        .file-preview.active {
-            display: block;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .file-item:hover {
+            border-color: var(--primary-color);
         }
 
         .file-icon {
@@ -192,7 +212,7 @@
         .file-icon svg {
             width: 24px;
             height: 24px;
-            color: #10b981;
+            color: var(--success-color);
         }
 
         .file-details {
@@ -215,24 +235,30 @@
         }
 
         .remove-file {
-            padding: 0.5rem 1rem;
+            padding: 0.5rem;
             background: transparent;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.875rem;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.375rem;
+            justify-content: center;
             flex-shrink: 0;
+            width: 36px;
+            height: 36px;
         }
 
         .remove-file:hover {
-            background: var(--background);
-            border-color: #ef4444;
-            color: #ef4444;
+            background: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+        }
+
+        .remove-file svg {
+            width: 18px;
+            height: 18px;
         }
 
         .action-buttons {
@@ -249,21 +275,15 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
         }
 
-        .btn-cancel {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            flex: 0 0 auto;
-        }
-
-        .btn-cancel:hover {
-            background: var(--background);
+        .btn svg {
+            width: 20px;
+            height: 20px;
         }
 
         .btn-primary {
@@ -272,8 +292,10 @@
             flex: 1;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
         .btn-primary:disabled {
@@ -282,32 +304,57 @@
             opacity: 0.6;
         }
 
-        .btn svg {
-            width: 16px;
-            height: 16px;
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--background);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-cancel:hover {
+            background: var(--background);
         }
 
         @keyframes spin {
-            from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
         }
 
         @media (max-width: 640px) {
             .header {
                 padding: 1rem;
-            }
-
-            .header-content {
-                padding: 0;
-            }
-
-            .logo {
-                font-size: 1.125rem;
-            }
-
-            .logo-icon {
-                width: 28px;
-                height: 28px;
             }
 
             .container {
@@ -330,10 +377,6 @@
             .btn {
                 width: 100%;
             }
-
-            .btn-cancel {
-                flex: 1;
-            }
         }
     </style>
 </head>
@@ -342,7 +385,7 @@
         <div class="header-content">
             <div class="logo">
                 <div class="logo-icon">R</div>
-                <span>Tratamento de Dados</span>
+                <span>Tratamento de Dados - Processamento Paralelo</span>
             </div>
         </div>
     </header>
@@ -350,10 +393,17 @@
     <div class="container">
         <div class="upload-card">
             <div class="card-header">
-                <h2>Upload de Arquivo</h2>
-                <p>Faça o upload do arquivo Excel para processamento</p>
+                <h2>Upload de Arquivos <span class="file-counter" id="fileCounter">0/8</span></h2>
+                <p>Faça upload de até 8 arquivos Excel para processamento simultâneo</p>
             </div>
             <div class="card-content">
+                <div class="alert alert-info" id="infoAlert">
+                    <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
+                </div>
+
                 <div id="uploadArea" class="upload-area">
                     <div class="upload-icon">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,45 +411,33 @@
                         </svg>
                     </div>
                     <div class="upload-text">
-                        <h3>Clique para fazer upload ou arraste o arquivo</h3>
-                        <p>Faça upload de planilhas Excel para processamento</p>
-                        <p class="file-types">Formatos suportados: .xlsx, .xls (Máximo 20MB)</p>
+                        <h3>Clique para fazer upload ou arraste os arquivos</h3>
+                        <p>Selecione de 1 até 8 arquivos Excel para processamento</p>
+                        <p class="file-types">Formatos suportados: .xlsx, .xls (Máximo 20MB por arquivo)</p>
                     </div>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" />
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" multiple />
                 </div>
 
-                <div id="filePreview" class="file-preview">
-                    <div class="file-info">
-                        <div class="file-icon">
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="file-details">
-                            <div class="file-name" id="fileName">arquivo.xlsx</div>
-                            <div class="file-size" id="fileSize">1.2 MB</div>
-                        </div>
-                        <button class="remove-file" id="removeFile">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Remover
-                        </button>
-                    </div>
-                </div>
+                <div id="filesList" class="files-list"></div>
 
                 <div class="action-buttons">
-                    <button class="btn btn-cancel" id="cancelBtn">
+                    <button class="btn btn-secondary" id="addMoreBtn" style="display: none;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Adicionar Mais Arquivos
+                    </button>
+                    <button class="btn btn-cancel" id="cancelBtn" style="display: none;">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        Cancelar
+                        Limpar Tudo
                     </button>
                     <button class="btn btn-primary" id="uploadBtn" disabled>
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        Processar Arquivo
+                        Processar Arquivos em Paralelo
                     </button>
                 </div>
             </div>
@@ -409,17 +447,20 @@
     <script>
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const filePreview = document.getElementById('filePreview');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const removeFileBtn = document.getElementById('removeFile');
+        const filesList = document.getElementById('filesList');
+        const fileCounter = document.getElementById('fileCounter');
+        const addMoreBtn = document.getElementById('addMoreBtn');
         const uploadBtn = document.getElementById('uploadBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const infoAlert = document.getElementById('infoAlert');
 
-        let selectedFile = null;
+        let selectedFiles = [];
+        const MAX_FILES = 8;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
         uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => handleFileSelect(e.target.files[0]));
+        fileInput.addEventListener('change', (e) => handleFilesSelect(e.target.files));
+        addMoreBtn.addEventListener('click', () => fileInput.click());
 
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -431,56 +472,136 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('drag-over');
-            handleFileSelect(e.dataTransfer.files[0]);
+            handleFilesSelect(e.dataTransfer.files);
         });
 
-        function handleFileSelect(file) {
-            if (!file) return;
+        function handleFilesSelect(files) {
+            if (!files || files.length === 0) return;
 
             const validTypes = [
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'application/vnd.ms-excel'
             ];
-            
-            if (!validTypes.includes(file.type)) {
-                alert('Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)');
-                return;
+
+            let addedCount = 0;
+
+            for (const file of files) {
+                if (selectedFiles.length >= MAX_FILES) {
+                    alert(`Limite de ${MAX_FILES} arquivos atingido!`);
+                    break;
+                }
+
+                if (!validTypes.includes(file.type)) {
+                    alert(`Arquivo "${file.name}" não é um Excel válido (.xlsx ou .xls)`);
+                    continue;
+                }
+
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`Arquivo "${file.name}" excede o tamanho máximo de 20MB`);
+                    continue;
+                }
+
+                // Verifica duplicatas
+                if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    alert(`Arquivo "${file.name}" já foi adicionado`);
+                    continue;
+                }
+
+                selectedFiles.push(file);
+                addedCount++;
             }
 
-            if (file.size > 20 * 1024 * 1024) {
-                alert('O arquivo excede o tamanho máximo de 20MB');
-                return;
+            if (addedCount > 0) {
+                updateUI();
             }
 
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            filePreview.classList.add('active');
-            uploadArea.style.display = 'none';
-            uploadBtn.disabled = false;
+            // Limpa o input para permitir adicionar o mesmo arquivo novamente se removido
+            fileInput.value = '';
         }
 
-        removeFileBtn.addEventListener('click', () => {
-            selectedFile = null;
-            fileInput.value = '';
-            filePreview.classList.remove('active');
-            uploadArea.style.display = 'block';
-            uploadBtn.disabled = true;
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateUI();
+        }
+
+        function updateUI() {
+            fileCounter.textContent = `${selectedFiles.length}/${MAX_FILES}`;
+            
+            if (selectedFiles.length > 0) {
+                uploadArea.style.display = 'none';
+                filesList.classList.add('active');
+                uploadBtn.disabled = false;
+                cancelBtn.style.display = 'block';
+                
+                if (selectedFiles.length < MAX_FILES) {
+                    addMoreBtn.style.display = 'flex';
+                } else {
+                    addMoreBtn.style.display = 'none';
+                }
+
+                // Renderiza lista de arquivos
+                filesList.innerHTML = selectedFiles.map((file, index) => `
+                    <div class="file-item">
+                        <div class="file-icon">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${formatFileSize(file.size)}</div>
+                        </div>
+                        <button class="remove-file" onclick="removeFile(${index})">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+
+                // Atualiza mensagem informativa
+                if (selectedFiles.length === 1) {
+                    infoAlert.innerHTML = `
+                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>1 arquivo pronto. Adicione até ${MAX_FILES - 1} arquivos adicionais para processamento paralelo!</span>
+                    `;
+                } else {
+                    infoAlert.innerHTML = `
+                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>${selectedFiles.length} arquivos prontos para processamento simultâneo! ⚡</span>
+                    `;
+                }
+            } else {
+                resetForm();
+            }
+        }
+
+        cancelBtn.addEventListener('click', () => {
+            if (confirm('Deseja limpar todos os arquivos selecionados?')) {
+                selectedFiles = [];
+                resetForm();
+            }
         });
 
         uploadBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
+            if (selectedFiles.length === 0) return;
 
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = `
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Processando...
+                Processando ${selectedFiles.length} arquivo(s)...
             `;
 
             const formData = new FormData();
-            formData.append('file', selectedFile);
+            selectedFiles.forEach((file, index) => {
+                formData.append(`file${index + 1}`, file);
+            });
 
             try {
                 const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos';
@@ -491,36 +612,62 @@
                 });
 
                 if (response.ok) {
-                    alert('Arquivo processado com sucesso!');
+                    // Verifica se é um ZIP
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/zip')) {
+                        // Download do ZIP
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `processados_${new Date().toISOString().split('T')[0]}.zip`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                        
+                        alert(`✅ ${selectedFiles.length} arquivo(s) processado(s) com sucesso! O download do ZIP foi iniciado.`);
+                    } else {
+                        alert(`✅ ${selectedFiles.length} arquivo(s) processado(s) com sucesso!`);
+                    }
+                    
+                    selectedFiles = [];
                     resetForm();
                 } else {
-                    throw new Error('Erro no processamento');
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Erro no processamento');
                 }
             } catch (error) {
-                alert('Erro ao processar arquivo. Tente novamente.');
+                console.error('Erro:', error);
+                alert(`❌ Erro ao processar arquivos: ${error.message}\n\nTente novamente.`);
                 uploadBtn.disabled = false;
                 uploadBtn.innerHTML = `
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Processar Arquivo
+                    Processar Arquivos em Paralelo
                 `;
             }
         });
 
-        cancelBtn.addEventListener('click', () => resetForm());
-
         function resetForm() {
-            selectedFile = null;
-            fileInput.value = '';
-            filePreview.classList.remove('active');
+            filesList.classList.remove('active');
             uploadArea.style.display = 'block';
             uploadBtn.disabled = true;
+            addMoreBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            fileCounter.textContent = '0/8';
             uploadBtn.innerHTML = `
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                Processar Arquivo
+                Processar Arquivos em Paralelo
+            `;
+            infoAlert.innerHTML = `
+                <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
             `;
         }
 
