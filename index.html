@@ -23,6 +23,7 @@
             --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
             --success-color: #10b981;
             --error-color: #ef4444;
+            --info-color: #3b82f6;
         }
 
         body {
@@ -41,7 +42,7 @@
         }
 
         .header-content {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -68,17 +69,18 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             margin: 2rem auto;
             padding: 0 2rem;
         }
 
-        .upload-card {
+        .upload-card, .results-card {
             background: var(--card-background);
             border-radius: 8px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
             overflow: hidden;
+            margin-bottom: 2rem;
         }
 
         .card-header {
@@ -173,7 +175,6 @@
             display: none;
         }
 
-        /* ⭐ NOVO: Layout em Grid para arquivos */
         .files-list {
             display: none;
             margin-top: 1rem;
@@ -371,12 +372,131 @@
             border-color: var(--text-secondary);
         }
 
+        /* ⭐ NOVOS ESTILOS - ÁREA DE RESULTADOS */
+        .results-card {
+            display: none;
+        }
+
+        .results-card.active {
+            display: block;
+        }
+
+        .processed-files-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .processed-file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .processed-file-item:hover {
+            border-color: var(--success-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .processed-file-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .processed-file-icon svg {
+            width: 22px;
+            height: 22px;
+            color: var(--success-color);
+        }
+
+        .processed-file-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .processed-file-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .processed-file-size {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .download-btn {
+            padding: 0.5rem 0.875rem;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            flex-shrink: 0;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .download-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .success-message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            color: #065f46;
+            font-size: 0.875rem;
+        }
+
+        .success-message svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .btn-new-upload {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
         @media (max-width: 640px) {
-            .files-grid {
+            .files-grid,
+            .processed-files-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -401,7 +521,8 @@
     </div>
 
     <div class="container">
-        <div class="upload-card">
+        <!-- CARD DE UPLOAD -->
+        <div class="upload-card" id="uploadCard">
             <div class="card-header">
                 <h2>Upload de Arquivos <span class="file-counter" id="fileCounter">0/8</span></h2>
                 <p>Faça upload de até 8 arquivos Excel para processamento simultâneo</p>
@@ -427,10 +548,9 @@
                         <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
-                        <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
+                        <span>Adicione até 8 arquivos Excel para processamento simultâneo!</span>
                     </div>
                     
-                    <!-- Grid de arquivos será inserido aqui -->
                     <div class="files-grid" id="filesGrid"></div>
 
                     <button class="add-more-btn" id="addMoreBtn">
@@ -457,6 +577,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- ⭐ NOVO CARD DE RESULTADOS -->
+        <div class="results-card" id="resultsCard">
+            <div class="card-header">
+                <h2>Arquivos Processados ✅</h2>
+                <p>Baixe os arquivos processados individualmente</p>
+            </div>
+
+            <div class="card-content">
+                <div class="success-message">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="successMessage">Arquivos processados com sucesso!</span>
+                </div>
+
+                <div class="processed-files-grid" id="processedFilesGrid"></div>
+
+                <button class="btn btn-primary btn-new-upload" id="newUploadBtn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Processar Novos Arquivos
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -464,7 +610,7 @@
         const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
         let selectedFiles = [];
-        let processedFiles = []; // ⭐ Armazena arquivos processados
+        let processedFiles = [];
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -476,6 +622,11 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const addMoreBtn = document.getElementById('addMoreBtn');
         const infoAlert = document.getElementById('infoAlert');
+        const uploadCard = document.getElementById('uploadCard');
+        const resultsCard = document.getElementById('resultsCard');
+        const processedFilesGrid = document.getElementById('processedFilesGrid');
+        const successMessage = document.getElementById('successMessage');
+        const newUploadBtn = document.getElementById('newUploadBtn');
 
         uploadArea.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFilesSelect(e.target.files));
@@ -520,7 +671,6 @@
                     continue;
                 }
 
-                // Verifica duplicatas
                 if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
                     alert(`Arquivo "${file.name}" já foi adicionado`);
                     continue;
@@ -557,7 +707,6 @@
                     addMoreBtn.style.display = 'none';
                 }
 
-                // ⭐ Renderiza grid de arquivos
                 filesGrid.innerHTML = selectedFiles.map((file, index) => `
                     <div class="file-item">
                         <div class="file-icon">
@@ -577,7 +726,6 @@
                     </div>
                 `).join('');
 
-                // Atualiza mensagem informativa e botão
                 if (selectedFiles.length === 1) {
                     infoAlert.innerHTML = `
                         <svg fill="currentColor" viewBox="0 0 20 20">
@@ -603,7 +751,6 @@
         cancelBtn.addEventListener('click', () => {
             if (confirm('Deseja limpar todos os arquivos selecionados?')) {
                 selectedFiles = [];
-                processedFiles = [];
                 resetForm();
             }
         });
@@ -636,35 +783,30 @@
                     const blob = await response.blob();
                     const contentType = response.headers.get('content-type');
                     
-                    // ⭐ LÓGICA DE DOWNLOAD INTELIGENTE
-                    if (selectedFiles.length === 1) {
-                        // 1 arquivo → Download direto do Excel
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = selectedFiles[0].name.replace('.xlsx', '_processado.xlsx').replace('.xls', '_processado.xls');
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        a.remove();
-                        
-                        alert(`✅ Arquivo processado com sucesso! O download foi iniciado.`);
+                    // ⭐ LÓGICA NOVA: Receber e Mostrar Arquivos
+                    processedFiles = [];
+                    
+                    if (contentType && contentType.includes('application/zip')) {
+                        // É um ZIP - precisamos extrair os arquivos
+                        // Por enquanto, vamos mostrar o ZIP para download
+                        processedFiles.push({
+                            name: `processados_${new Date().toISOString().split('T')[0]}.zip`,
+                            size: blob.size,
+                            blob: blob,
+                            type: 'zip'
+                        });
                     } else {
-                        // 2+ arquivos → Download do ZIP
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `processados_${new Date().toISOString().split('T')[0]}.zip`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        a.remove();
-                        
-                        alert(`✅ ${selectedFiles.length} arquivos processados com sucesso! O download do ZIP foi iniciado.`);
+                        // É um arquivo único
+                        const fileName = selectedFiles[0].name.replace('.xlsx', '_processado.xlsx').replace('.xls', '_processado.xls');
+                        processedFiles.push({
+                            name: fileName,
+                            size: blob.size,
+                            blob: blob,
+                            type: 'excel'
+                        });
                     }
                     
-                    selectedFiles = [];
-                    resetForm();
+                    showResults();
                 } else {
                     const errorText = await response.text();
                     throw new Error(errorText || 'Erro no processamento');
@@ -680,6 +822,58 @@
                     <span id="uploadBtnText">Processar Arquivos</span>
                 `;
             }
+        });
+
+        function showResults() {
+            // Esconde card de upload
+            uploadCard.style.display = 'none';
+            
+            // Mostra card de resultados
+            resultsCard.classList.add('active');
+            
+            // Atualiza mensagem de sucesso
+            successMessage.textContent = `${processedFiles.length} arquivo(s) processado(s) com sucesso!`;
+            
+            // Renderiza arquivos processados
+            processedFilesGrid.innerHTML = processedFiles.map((file, index) => `
+                <div class="processed-file-item">
+                    <div class="processed-file-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="processed-file-details">
+                        <div class="processed-file-name" title="${file.name}">${file.name}</div>
+                        <div class="processed-file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <button class="download-btn" onclick="downloadFile(${index})">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Baixar
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function downloadFile(index) {
+            const file = processedFiles[index];
+            const url = window.URL.createObjectURL(file.blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        }
+
+        newUploadBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            processedFiles = [];
+            resultsCard.classList.remove('active');
+            uploadCard.style.display = 'block';
+            resetForm();
         });
 
         function resetForm() {
