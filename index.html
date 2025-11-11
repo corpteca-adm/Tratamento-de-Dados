@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Arquivos - Processamento Paralelo</title>
+    <title>Upload de Arquivos - Tratamento de Dados</title>
     <style>
         * {
             margin: 0;
@@ -173,6 +173,7 @@
             display: none;
         }
 
+        /* ⭐ NOVO: Layout em Grid para arquivos */
         .files-list {
             display: none;
             margin-top: 1rem;
@@ -182,15 +183,21 @@
             display: block;
         }
 
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
         .file-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
+            gap: 0.75rem;
+            padding: 0.875rem;
             background: var(--background);
             border-radius: 6px;
             border: 1px solid var(--border-color);
-            margin-bottom: 0.75rem;
             transition: all 0.2s;
         }
 
@@ -199,10 +206,10 @@
         }
 
         .file-icon {
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             background: rgba(16, 185, 129, 0.1);
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -210,8 +217,8 @@
         }
 
         .file-icon svg {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             color: var(--success-color);
         }
 
@@ -222,74 +229,123 @@
 
         .file-name {
             font-weight: 500;
+            font-size: 0.875rem;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.125rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .file-size {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
 
         .remove-file {
-            padding: 0.5rem;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: none;
             background: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
             flex-shrink: 0;
-            width: 36px;
-            height: 36px;
         }
 
         .remove-file:hover {
-            background: var(--error-color);
-            border-color: var(--error-color);
-            color: white;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
         }
 
         .remove-file svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
         }
 
-        .action-buttons {
+        .info-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.875rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            color: #1e40af;
+            font-size: 0.875rem;
+        }
+
+        .info-alert svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .add-more-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.875rem;
+            background: transparent;
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .add-more-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(74, 85, 104, 0.02);
+        }
+
+        .add-more-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .actions {
             display: flex;
             gap: 0.75rem;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
 
         .btn {
-            padding: 0.625rem 1.25rem;
-            border: none;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.25rem;
             border-radius: 6px;
             font-size: 0.9375rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            border: none;
         }
 
         .btn svg {
             width: 20px;
             height: 20px;
+            flex-shrink: 0;
         }
 
         .btn-primary {
             background: var(--primary-color);
             color: white;
-            flex: 1;
         }
 
         .btn-primary:hover:not(:disabled) {
@@ -299,81 +355,35 @@
         }
 
         .btn-primary:disabled {
-            background: var(--secondary-color);
+            opacity: 0.5;
             cursor: not-allowed;
-            opacity: 0.6;
         }
 
         .btn-secondary {
             background: transparent;
-            border: 1px solid var(--border-color);
             color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            display: none;
         }
 
         .btn-secondary:hover {
             background: var(--background);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-cancel {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-        }
-
-        .btn-cancel:hover {
-            background: var(--background);
+            border-color: var(--text-secondary);
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .alert {
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .alert-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
         @media (max-width: 640px) {
-            .header {
-                padding: 1rem;
+            .files-grid {
+                grid-template-columns: 1fr;
             }
-
-            .container {
-                padding: 1rem;
-                margin: 1rem auto;
+            
+            .actions {
+                flex-direction: column;
             }
-
-            .card-content {
-                padding: 1rem;
-            }
-
-            .upload-area {
-                padding: 2rem 1rem;
-            }
-
-            .action-buttons {
-                flex-direction: column-reverse;
-            }
-
+            
             .btn {
                 width: 100%;
             }
@@ -381,14 +391,14 @@
     </style>
 </head>
 <body>
-    <header class="header">
+    <div class="header">
         <div class="header-content">
             <div class="logo">
-                <div class="logo-icon">R</div>
-                <span>Tratamento de Dados - Processamento Paralelo</span>
+                <div class="logo-icon">TD</div>
+                <span>Tratamento de Dados</span>
             </div>
         </div>
-    </header>
+    </div>
 
     <div class="container">
         <div class="upload-card">
@@ -396,38 +406,43 @@
                 <h2>Upload de Arquivos <span class="file-counter" id="fileCounter">0/8</span></h2>
                 <p>Faça upload de até 8 arquivos Excel para processamento simultâneo</p>
             </div>
-            <div class="card-content">
-                <div class="alert alert-info" id="infoAlert">
-                    <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
-                </div>
 
-                <div id="uploadArea" class="upload-area">
+            <div class="card-content">
+                <div class="upload-area" id="uploadArea">
                     <div class="upload-icon">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                         </svg>
                     </div>
                     <div class="upload-text">
-                        <h3>Clique para fazer upload ou arraste os arquivos</h3>
-                        <p>Selecione de 1 até 8 arquivos Excel para processamento</p>
-                        <p class="file-types">Formatos suportados: .xlsx, .xls (Máximo 20MB por arquivo)</p>
+                        <h3>Arraste arquivos aqui ou clique para selecionar</h3>
+                        <p>Suporta múltiplos arquivos Excel (até 8 arquivos)</p>
+                        <p class="file-types">Formatos aceitos: .xlsx, .xls • Máximo 20MB por arquivo</p>
                     </div>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" multiple />
+                    <input type="file" id="fileInput" multiple accept=".xlsx,.xls">
                 </div>
 
-                <div id="filesList" class="files-list"></div>
+                <div class="files-list" id="filesList">
+                    <div class="info-alert" id="infoAlert">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
+                    </div>
+                    
+                    <!-- Grid de arquivos será inserido aqui -->
+                    <div class="files-grid" id="filesGrid"></div>
 
-                <div class="action-buttons">
-                    <button class="btn btn-secondary" id="addMoreBtn" style="display: none;">
+                    <button class="add-more-btn" id="addMoreBtn">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Adicionar Mais Arquivos
+                        Adicionar mais arquivos
                     </button>
-                    <button class="btn btn-cancel" id="cancelBtn" style="display: none;">
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" id="cancelBtn">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -437,7 +452,7 @@
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        Processar Arquivos em Paralelo
+                        <span id="uploadBtnText">Processar Arquivos</span>
                     </button>
                 </div>
             </div>
@@ -445,18 +460,22 @@
     </div>
 
     <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const filesList = document.getElementById('filesList');
-        const fileCounter = document.getElementById('fileCounter');
-        const addMoreBtn = document.getElementById('addMoreBtn');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const infoAlert = document.getElementById('infoAlert');
-
-        let selectedFiles = [];
         const MAX_FILES = 8;
         const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+
+        let selectedFiles = [];
+        let processedFiles = []; // ⭐ Armazena arquivos processados
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const filesGrid = document.getElementById('filesGrid');
+        const filesList = document.getElementById('filesList');
+        const fileCounter = document.getElementById('fileCounter');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadBtnText = document.getElementById('uploadBtnText');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const addMoreBtn = document.getElementById('addMoreBtn');
+        const infoAlert = document.getElementById('infoAlert');
 
         uploadArea.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFilesSelect(e.target.files));
@@ -515,7 +534,6 @@
                 updateUI();
             }
 
-            // Limpa o input para permitir adicionar o mesmo arquivo novamente se removido
             fileInput.value = '';
         }
 
@@ -539,8 +557,8 @@
                     addMoreBtn.style.display = 'none';
                 }
 
-                // Renderiza lista de arquivos
-                filesList.innerHTML = selectedFiles.map((file, index) => `
+                // ⭐ Renderiza grid de arquivos
+                filesGrid.innerHTML = selectedFiles.map((file, index) => `
                     <div class="file-item">
                         <div class="file-icon">
                             <svg fill="currentColor" viewBox="0 0 20 20">
@@ -548,10 +566,10 @@
                             </svg>
                         </div>
                         <div class="file-details">
-                            <div class="file-name">${file.name}</div>
+                            <div class="file-name" title="${file.name}">${file.name}</div>
                             <div class="file-size">${formatFileSize(file.size)}</div>
                         </div>
-                        <button class="remove-file" onclick="removeFile(${index})">
+                        <button class="remove-file" onclick="removeFile(${index})" title="Remover arquivo">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -559,21 +577,23 @@
                     </div>
                 `).join('');
 
-                // Atualiza mensagem informativa
+                // Atualiza mensagem informativa e botão
                 if (selectedFiles.length === 1) {
                     infoAlert.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
                         <span>1 arquivo pronto. Adicione até ${MAX_FILES - 1} arquivos adicionais para processamento paralelo!</span>
                     `;
+                    uploadBtnText.textContent = 'Processar Arquivo';
                 } else {
                     infoAlert.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                         </svg>
                         <span>${selectedFiles.length} arquivos prontos para processamento simultâneo! ⚡</span>
                     `;
+                    uploadBtnText.textContent = 'Processar Arquivos';
                 }
             } else {
                 resetForm();
@@ -583,6 +603,7 @@
         cancelBtn.addEventListener('click', () => {
             if (confirm('Deseja limpar todos os arquivos selecionados?')) {
                 selectedFiles = [];
+                processedFiles = [];
                 resetForm();
             }
         });
@@ -595,7 +616,7 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="animation: spin 1s linear infinite;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Processando ${selectedFiles.length} arquivo(s)...
+                <span>Processando ${selectedFiles.length} arquivo(s)...</span>
             `;
 
             const formData = new FormData();
@@ -612,11 +633,24 @@
                 });
 
                 if (response.ok) {
-                    // Verifica se é um ZIP
+                    const blob = await response.blob();
                     const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/zip')) {
-                        // Download do ZIP
-                        const blob = await response.blob();
+                    
+                    // ⭐ LÓGICA DE DOWNLOAD INTELIGENTE
+                    if (selectedFiles.length === 1) {
+                        // 1 arquivo → Download direto do Excel
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = selectedFiles[0].name.replace('.xlsx', '_processado.xlsx').replace('.xls', '_processado.xls');
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        a.remove();
+                        
+                        alert(`✅ Arquivo processado com sucesso! O download foi iniciado.`);
+                    } else {
+                        // 2+ arquivos → Download do ZIP
                         const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
@@ -626,9 +660,7 @@
                         window.URL.revokeObjectURL(url);
                         a.remove();
                         
-                        alert(`✅ ${selectedFiles.length} arquivo(s) processado(s) com sucesso! O download do ZIP foi iniciado.`);
-                    } else {
-                        alert(`✅ ${selectedFiles.length} arquivo(s) processado(s) com sucesso!`);
+                        alert(`✅ ${selectedFiles.length} arquivos processados com sucesso! O download do ZIP foi iniciado.`);
                     }
                     
                     selectedFiles = [];
@@ -645,7 +677,7 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Processar Arquivos em Paralelo
+                    <span id="uploadBtnText">Processar Arquivos</span>
                 `;
             }
         });
@@ -661,13 +693,13 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
-                Processar Arquivos em Paralelo
+                <span id="uploadBtnText">Processar Arquivos</span>
             `;
             infoAlert.innerHTML = `
-                <svg fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;">
+                <svg fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                 </svg>
-                <span>Processamento paralelo: Todos os arquivos serão processados simultaneamente para máxima velocidade!</span>
+                <span>Adicione até 8 arquivos Excel para processamento simultâneo!</span>
             `;
         }
 
@@ -679,11 +711,5 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
     </script>
-
-    <script>
-      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
-
 </body>
 </html>
