@@ -638,7 +638,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         const MAX_FILES = 8;
         let selectedFiles = [];
@@ -778,8 +777,8 @@
         uploadBtn.addEventListener('click', async () => {
             if (selectedFiles.length === 0) return;
 
-            // Define quantos arquivos esperamos receber de volta
-            expectedFilesCount = selectedFiles.length;
+            // O N8N sempre retorna 1 arquivo (ZIP se múltiplos, ou Excel se único)
+            expectedFilesCount = 1;
             processedFiles = [];
 
             // Transição para tela de processamento
@@ -802,54 +801,40 @@
                 });
 
                 if (response.ok) {
-                    processingText.textContent = 'Aguardando arquivos processados do N8N...';
+                    processingText.textContent = 'Recebendo resposta do N8N...';
                     
                     const blob = await response.blob();
                     const contentType = response.headers.get('content-type');
                     
-                    // Descompacta ZIP se necessário
-                    if (contentType && contentType.includes('application/zip')) {
-                        processingText.textContent = 'Extraindo arquivos recebidos...';
-                        const zip = await JSZip.loadAsync(blob);
-                        
-                        for (const [filename, file] of Object.entries(zip.files)) {
-                            if (!file.dir) {
-                                const fileBlob = await file.async('blob');
-                                processedFiles.push({
-                                    name: filename,
-                                    size: fileBlob.size
-                                });
-                                updateProcessingCounter();
-                            }
+                    // Pega o nome do arquivo do header ou usa nome padrão
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let fileName = 'arquivo_processado.xlsx';
+                    
+                    if (contentDisposition) {
+                        const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (fileNameMatch && fileNameMatch[1]) {
+                            fileName = fileNameMatch[1].replace(/['"]/g, '');
                         }
-                    } else {
-                        // Arquivo único - pega o nome real do Content-Disposition ou usa nome padrão
-                        const contentDisposition = response.headers.get('content-disposition');
-                        let fileName = 'arquivo_processado.xlsx';
-                        
-                        if (contentDisposition) {
-                            const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                            if (fileNameMatch && fileNameMatch[1]) {
-                                fileName = fileNameMatch[1].replace(/['"]/g, '');
-                            }
+                    } else if (contentType) {
+                        // Define nome baseado no tipo
+                        if (contentType.includes('zip')) {
+                            fileName = `processados_${new Date().toISOString().split('T')[0]}.zip`;
+                        } else if (contentType.includes('excel') || contentType.includes('spreadsheet')) {
+                            fileName = 'arquivo_processado.xlsx';
                         }
-                        
-                        processedFiles.push({
-                            name: fileName,
-                            size: blob.size
-                        });
-                        updateProcessingCounter();
                     }
                     
-                    // Verifica se recebeu todos os arquivos esperados
-                    if (processedFiles.length === expectedFilesCount) {
-                        processingText.textContent = 'Todos os arquivos recebidos!';
-                        setTimeout(() => {
-                            showResultsScreen();
-                        }, 500);
-                    } else {
-                        throw new Error(`Esperava ${expectedFilesCount} arquivo(s), mas recebeu ${processedFiles.length}`);
-                    }
+                    // Adiciona o arquivo recebido
+                    processedFiles.push({
+                        name: fileName,
+                        size: blob.size,
+                        type: contentType || 'application/octet-stream'
+                    });
+                    
+                    processingText.textContent = 'Arquivo recebido do N8N!';
+                    setTimeout(() => {
+                        showResultsScreen();
+                    }, 500);
                 } else {
                     const errorText = await response.text();
                     throw new Error(errorText || 'Erro no processamento');
@@ -861,16 +846,12 @@
             }
         });
 
-        function updateProcessingCounter() {
-            processingCounter.textContent = `Arquivos recebidos: ${processedFiles.length} de ${expectedFilesCount}`;
-        }
-
         function showProcessingScreen() {
             uploadScreen.classList.add('hidden');
             processingScreen.classList.add('active');
             resultsScreen.classList.remove('active');
             processingText.textContent = 'Enviando arquivos para o N8N...';
-            processingCounter.textContent = `Arquivos recebidos: 0 de ${expectedFilesCount}`;
+            processingCounter.textContent = `Aguardando resposta do N8N...`;
         }
 
         function showResultsScreen() {
@@ -878,21 +859,36 @@
             processingScreen.classList.remove('active');
             resultsScreen.classList.add('active');
             
-            successMessage.textContent = `${processedFiles.length} arquivo(s) recebido(s) do N8N`;
+            const totalFiles = processedFiles.length;
+            successMessage.textContent = `${totalFiles} arquivo(s) recebido(s) do N8N`;
             
-            resultsGrid.innerHTML = processedFiles.map((file, index) => `
-                <div class="result-item">
-                    <div class="result-icon">
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                        </svg>
+            resultsGrid.innerHTML = processedFiles.map((file, index) => {
+                // Define o ícone baseado no tipo de arquivo
+                let iconColor = 'rgba(59, 130, 246, 0.1)'; // azul padrão
+                let iconStroke = 'var(--info-color)';
+                
+                if (file.type && file.type.includes('zip')) {
+                    iconColor = 'rgba(147, 51, 234, 0.1)'; // roxo para ZIP
+                    iconStroke = '#9333ea';
+                } else if (file.name.endsWith('.zip')) {
+                    iconColor = 'rgba(147, 51, 234, 0.1)';
+                    iconStroke = '#9333ea';
+                }
+                
+                return `
+                    <div class="result-item">
+                        <div class="result-icon" style="background: ${iconColor};">
+                            <svg fill="currentColor" viewBox="0 0 20 20" style="color: ${iconStroke};">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="result-details">
+                            <div class="result-name" title="${file.name}">${file.name}</div>
+                            <div class="result-size">${formatFileSize(file.size)}</div>
+                        </div>
                     </div>
-                    <div class="result-details">
-                        <div class="result-name" title="${file.name}">${file.name}</div>
-                        <div class="result-size">${formatFileSize(file.size)}</div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function showUploadScreen() {
