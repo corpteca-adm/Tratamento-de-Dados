@@ -1,937 +1,765 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload de Arquivos - Tratamento de Dados</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-color: #4a5568;
-            --primary-hover: #2d3748;
-            --secondary-color: #64748b;
-            --background: #f8fafc;
-            --card-background: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --border-color: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-            --success-color: #10b981;
-            --error-color: #ef4444;
-            --info-color: #3b82f6;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .header {
-            background: var(--card-background);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1.25rem 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .header-content {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--primary-color);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        /* ========== TELA 1: UPLOAD ========== */
-        .upload-screen {
-            display: block;
-        }
-
-        .upload-screen.hidden {
-            display: none;
-        }
-
-        .upload-card {
-            background: var(--card-background);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .card-header h2 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .card-header p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .file-counter {
-            display: inline-block;
-            margin-left: 0.5rem;
-            padding: 0.125rem 0.5rem;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .card-content {
-            padding: 1.5rem;
-        }
-
-        .upload-area {
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 3rem 2rem;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            background: var(--background);
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary-color);
-            background: rgba(74, 85, 104, 0.02);
-        }
-
-        .upload-area.drag-over {
-            border-color: var(--primary-color);
-            background: rgba(74, 85, 104, 0.05);
-            transform: scale(1.01);
-        }
-
-        .upload-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1rem;
-            background: rgba(74, 85, 104, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .upload-icon svg {
-            width: 32px;
-            height: 32px;
-            color: var(--primary-color);
-        }
-
-        .upload-text h3 {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .upload-text p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.25rem;
-        }
-
-        .file-types {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .files-list {
-            display: none;
-            margin-top: 1rem;
-        }
-
-        .files-list.active {
-            display: block;
-        }
-
-        .files-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem;
-            background: var(--background);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            transition: all 0.2s;
-        }
-
-        .file-item:hover {
-            border-color: var(--primary-color);
-        }
-
-        .file-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .file-icon svg {
-            width: 20px;
-            height: 20px;
-            color: var(--success-color);
-        }
-
-        .file-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .file-size {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-        }
-
-        .remove-file {
-            width: 28px;
-            height: 28px;
-            border: none;
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error-color);
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .remove-file:hover {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        .remove-file svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .alert {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.875rem;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 6px;
-            margin-bottom: 1rem;
-        }
-
-        .alert svg {
-            width: 20px;
-            height: 20px;
-            color: var(--info-color);
-            flex-shrink: 0;
-        }
-
-        .alert span {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-        }
-
-        .actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 0.75rem 1.25rem;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn svg {
-            width: 18px;
-            height: 18px;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-hover);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--background);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(74, 85, 104, 0.05);
-        }
-
-        /* ========== TELA 2: PROCESSAMENTO ========== */
-        .processing-screen {
-            display: none;
-            text-align: center;
-        }
-
-        .processing-screen.active {
-            display: block;
-        }
-
-        .processing-card {
-            background: var(--card-background);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 4rem 2rem;
-        }
-
-        .spinner {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 2rem;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .processing-text {
-            font-size: 1.125rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .processing-subtext {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-        }
-
-        .processing-counter {
-            font-size: 1rem;
-            color: var(--info-color);
-            font-weight: 500;
-        }
-
-        /* ========== TELA 3: RESULTADOS ========== */
-        .results-screen {
-            display: none;
-        }
-
-        .results-screen.active {
-            display: block;
-        }
-
-        .results-card {
-            background: var(--card-background);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .success-header {
-            padding: 1.5rem;
-            background: rgba(16, 185, 129, 0.1);
-            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .success-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--success-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .success-icon svg {
-            width: 28px;
-            height: 28px;
-            color: white;
-        }
-
-        .success-content h2 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .success-content p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .results-content {
-            padding: 1.5rem;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .result-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: var(--background);
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .result-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .result-icon svg {
-            width: 22px;
-            height: 22px;
-            color: var(--info-color);
-        }
-
-        .result-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .result-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-bottom: 0.25rem;
-        }
-
-        .result-size {
-            font-size: 0.8125rem;
-            color: var(--text-secondary);
-        }
-
-        .result-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                padding: 0 1rem;
-            }
-
-            .files-grid,
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tratamento de Dados — Upload</title>
+
+  <style>
+    /* ====== Design tokens (corporate, clean) ====== */
+    :root{
+      --bg:#f4f6f8;
+      --surface:#ffffff;
+      --muted:#6b7280;
+      --text:#0f1724;
+      --primary:#0b5fff;
+      --primary-600:#084fcc;
+      --border:#e6eef8;
+      --success:#10b981;
+      --danger:#ef4444;
+      --shadow: 0 6px 18px rgba(12, 20, 36, 0.06);
+      --radius:10px;
+      --glass: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.9));
+      font-size:16px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    /* ===== layout ===== */
+    .wrap{
+      max-width:980px;
+      margin:36px auto;
+      padding:24px;
+    }
+
+    header.appbar{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding:18px 24px;
+      background:var(--surface);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      border:1px solid var(--border);
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .brand-logo{
+      width:44px;
+      height:44px;
+      background:linear-gradient(180deg,var(--primary),var(--primary-600));
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-weight:700;
+      box-shadow:0 4px 12px rgba(11,95,255,0.15);
+    }
+    .brand-title{
+      font-weight:600;
+      font-size:1.0625rem;
+    }
+    .brand-sub{
+      font-size:0.875rem;
+      color:var(--muted);
+    }
+
+    main.card{
+      margin-top:20px;
+      background:var(--surface);
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    /* ===== Page: Upload ===== */
+    .card-header{
+      padding:20px 24px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .card-header h1{
+      font-size:1.0625rem;
+      margin:0;
+      font-weight:600;
+    }
+    .card-header p{
+      margin:0;
+      color:var(--muted);
+      font-size:0.875rem;
+    }
+
+    .card-body{
+      padding:26px;
+    }
+
+    .upload-area{
+      border-radius:12px;
+      border:1px dashed var(--border);
+      padding:30px;
+      display:flex;
+      gap:20px;
+      align-items:center;
+      background:var(--glass);
+      transition:all .16s ease;
+      cursor:pointer;
+    }
+    .upload-area:focus,
+    .upload-area.hover{ box-shadow:0 6px 18px rgba(11,95,255,0.06); border-color:var(--primary); transform:translateY(-2px) }
+    .upload-icon{
+      width:64px;
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:10px;
+      background:linear-gradient(180deg, rgba(11,95,255,0.09), rgba(11,95,255,0.04));
+      flex-shrink:0;
+    }
+    .upload-icon svg{ width:32px; height:32px; color:var(--primary) }
+
+    .upload-info{
+      flex:1;
+    }
+    .upload-info h2{ margin:0; font-size:1.0625rem; font-weight:600; }
+    .upload-info p{ margin:6px 0 0; color:var(--muted); font-size:0.95rem }
+    .file-types{ margin-top:8px; color:var(--muted); font-size:0.85rem }
+
+    .controls{
+      margin-top:18px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      padding:10px 14px;
+      border-radius:8px;
+      border:1px solid transparent;
+      background:transparent;
+      cursor:pointer;
+      font-weight:600;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+    }
+    .btn.primary{
+      background:var(--primary);
+      color:white;
+      border-color:transparent;
+      box-shadow:0 6px 12px rgba(11,95,255,0.08);
+    }
+    .btn.ghost{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--border);
+    }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed }
+
+    /* files list */
+    .files-list{ margin-top:18px }
+    .files-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+    .file-card{
+      background:transparent;
+      border-radius:10px;
+      padding:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      border:1px solid var(--border);
+    }
+    .file-thumb{
+      width:44px;
+      height:44px;
+      border-radius:8px;
+      background:linear-gradient(180deg,rgba(16,185,129,0.06),rgba(16,185,129,0.02));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--success);
+      flex-shrink:0;
+    }
+    .file-meta{ flex:1; min-width:0 }
+    .file-name{ font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .file-size{ color:var(--muted); font-size:0.85rem; margin-top:4px }
+
+    .file-actions{ display:flex; gap:8px; align-items:center }
+    .icon-btn{
+      width:36px;
+      height:36px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:8px;
+      border:1px solid transparent;
+      background:transparent;
+      cursor:pointer;
+    }
+    .icon-btn.danger{
+      border-color:rgba(239,68,68,0.08);
+      color:var(--danger)
+    }
+
+    /* ===== Processing ===== */
+    .processing{
+      padding:36px;
+      text-align:center;
+    }
+    .spinner{
+      margin:0 auto 18px;
+      width:72px;height:72px;border-radius:50%;
+      border:6px solid var(--border); border-top-color:var(--primary);
+      animation:spin 1.05s linear infinite;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg)} }
+    .processing h3{ margin:8px 0 0; font-size:1.125rem; font-weight:700 }
+    .processing p{ margin:8px 0 0; color:var(--muted) }
+
+    /* ===== Results ===== */
+    .results{
+      padding:22px;
+    }
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
+    .result-item{
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .result-meta{ display:flex; gap:12px; align-items:center; min-width:0 }
+    .result-thumb{
+      width:44px;height:44px;border-radius:8px;background:linear-gradient(180deg,rgba(59,130,246,0.06),rgba(59,130,246,0.02));
+      display:flex;align-items:center;justify-content:center;color:var(--primary);
+    }
+    .result-name{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .result-size{ color:var(--muted); font-size:0.85rem }
+
+    /* responsive */
+    @media (max-width:720px){
+      .files-grid,.results-grid{ grid-template-columns:1fr }
+      .controls{ flex-direction:column; align-items:stretch }
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">📊</div>
-                <span>Tratamento de Dados</span>
-            </div>
+  <div class="wrap">
+    <header class="appbar" role="banner">
+      <div class="brand" aria-hidden="false">
+        <div class="brand-logo" aria-hidden="true">
+          <!-- subtle document icon -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M14 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V9l-6-6z" fill="white"/>
+            <path d="M14 3v6h6" fill="rgba(255,255,255,0.14)"/>
+          </svg>
         </div>
-    </div>
+        <div>
+          <div class="brand-title">Tratamento de Dados</div>
+          <div class="brand-sub">Processamento corporativo de planilhas</div>
+        </div>
+      </div>
+    </header>
 
-    <div class="container">
-        <!-- ========== TELA 1: UPLOAD ========== -->
-        <div class="upload-screen" id="uploadScreen">
-            <div class="upload-card">
-                <div class="card-header">
-                    <h2>Selecione os Arquivos <span class="file-counter" id="fileCounter">0/8</span></h2>
-                    <p>Arraste arquivos ou clique para selecionar</p>
-                </div>
-                <div class="card-content">
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                        </div>
-                        <div class="upload-text">
-                            <h3>Clique para selecionar arquivos</h3>
-                            <p>ou arraste e solte aqui</p>
-                            <p class="file-types">Formatos aceitos: .xlsx, .xls (máximo 8 arquivos)</p>
-                        </div>
-                    </div>
-                    <input type="file" id="fileInput" multiple accept=".xlsx,.xls">
-
-                    <div class="files-list" id="filesList">
-                        <div class="alert" id="infoAlert">
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                            </svg>
-                            <span>Adicione até 8 arquivos Excel para processamento simultâneo!</span>
-                        </div>
-                        <div class="files-grid" id="filesGrid"></div>
-                        <div class="actions">
-                            <button class="btn btn-secondary" id="cancelBtn" style="display: none;">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                                <span>Cancelar</span>
-                            </button>
-                            <button class="btn btn-secondary" id="addMoreBtn" style="display: none;">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                </svg>
-                                <span>Adicionar Mais</span>
-                            </button>
-                            <button class="btn btn-primary" id="uploadBtn" disabled>
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                </svg>
-                                <span id="uploadBtnText">Processar Arquivos</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <main class="card" role="main" aria-live="polite">
+      <!-- ===== Upload Screen ===== -->
+      <section id="uploadScreen">
+        <div class="card-header">
+          <div>
+            <h1>Carregar arquivos</h1>
+            <p id="uploadSubtitle">Selecione até 8 arquivos .xlsx ou .xls para processamento</p>
+          </div>
+          <div>
+            <div id="counterBadge" style="text-align:right; color:var(--muted); font-weight:600">0 / 8</div>
+          </div>
         </div>
 
-        <!-- ========== TELA 2: PROCESSAMENTO ========== -->
-        <div class="processing-screen" id="processingScreen">
-            <div class="processing-card">
-                <div class="spinner"></div>
-                <div class="processing-text" id="processingText">Enviando arquivos para processamento...</div>
-                <div class="processing-subtext">Aguardando resposta do N8N. Isso pode levar alguns instantes.</div>
-                <div class="processing-counter" id="processingCounter"></div>
+        <div class="card-body">
+          <div id="uploadArea" class="upload-area" tabindex="0" role="button" aria-label="Clique ou arraste arquivos para enviar">
+            <div class="upload-icon" aria-hidden="true">
+              <!-- upload cloud icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
+                <path d="M16 16l-4-4-4 4" />
+                <path d="M12 12v8" />
+                <path d="M20.39 16.61A5 5 0 0017 10h-1.26A8 8 0 104 16.29" />
+              </svg>
             </div>
-        </div>
 
-        <!-- ========== TELA 3: RESULTADOS ========== -->
-        <div class="results-screen" id="resultsScreen">
-            <div class="results-card">
-                <div class="success-header">
-                    <div class="success-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <div class="success-content">
-                        <h2 id="successTitle">Processamento Concluído!</h2>
-                        <p id="successMessage">Todos os arquivos foram recebidos do N8N</p>
-                    </div>
-                </div>
-                <div class="results-content">
-                    <div class="results-grid" id="resultsGrid"></div>
-                    <div class="result-actions">
-                        <button class="btn btn-primary" id="newUploadBtn">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            <span>Novo Processamento</span>
-                        </button>
-                    </div>
-                </div>
+            <div class="upload-info">
+              <h2 id="uploadTitle">Arraste e solte arquivos</h2>
+              <p>Arraste os arquivos para cá ou clique para selecionar.</p>
+              <div class="file-types">Formatos aceitos: .xlsx, .xls — Máximo 8 arquivos</div>
             </div>
-        </div>
-    </div>
 
-    <script>
-        const MAX_FILES = 8;
-        let selectedFiles = [];
-        let processedFiles = [];
-        let expectedFilesCount = 0;
-
-        // Elementos da DOM
-        const uploadScreen = document.getElementById('uploadScreen');
-        const processingScreen = document.getElementById('processingScreen');
-        const resultsScreen = document.getElementById('resultsScreen');
-        
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const filesList = document.getElementById('filesList');
-        const filesGrid = document.getElementById('filesGrid');
-        const fileCounter = document.getElementById('fileCounter');
-        const infoAlert = document.getElementById('infoAlert');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadBtnText = document.getElementById('uploadBtnText');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const addMoreBtn = document.getElementById('addMoreBtn');
-        
-        const processingText = document.getElementById('processingText');
-        const processingCounter = document.getElementById('processingCounter');
-        
-        const resultsGrid = document.getElementById('resultsGrid');
-        const successMessage = document.getElementById('successMessage');
-        const newUploadBtn = document.getElementById('newUploadBtn');
-
-        // Event Listeners
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileSelect);
-        addMoreBtn.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            const files = Array.from(e.dataTransfer.files);
-            addFiles(files);
-        });
-
-        function handleFileSelect(e) {
-            const files = Array.from(e.target.files);
-            addFiles(files);
-            fileInput.value = '';
-        }
-
-        function addFiles(files) {
-            const validFiles = files.filter(file => {
-                const ext = file.name.toLowerCase();
-                return ext.endsWith('.xlsx') || ext.endsWith('.xls');
-            });
-
-            const remainingSlots = MAX_FILES - selectedFiles.length;
-            const filesToAdd = validFiles.slice(0, remainingSlots);
-
-            selectedFiles = [...selectedFiles, ...filesToAdd];
-            updateFilesList();
-
-            if (validFiles.length > filesToAdd.length) {
-                alert(`⚠️ Limite de ${MAX_FILES} arquivos atingido. ${validFiles.length - filesToAdd.length} arquivo(s) não foram adicionados.`);
-            }
-        }
-
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            updateFilesList();
-        }
-
-        function updateFilesList() {
-            fileCounter.textContent = `${selectedFiles.length}/${MAX_FILES}`;
-
-            if (selectedFiles.length > 0) {
-                filesList.classList.add('active');
-                uploadArea.style.display = 'none';
-                uploadBtn.disabled = false;
-                addMoreBtn.style.display = selectedFiles.length < MAX_FILES ? 'flex' : 'none';
-                cancelBtn.style.display = 'flex';
-
-                filesGrid.innerHTML = selectedFiles.map((file, index) => `
-                    <div class="file-item">
-                        <div class="file-icon">
-                            <svg fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="file-info">
-                            <div class="file-name" title="${file.name}">${file.name}</div>
-                            <div class="file-size">${formatFileSize(file.size)}</div>
-                        </div>
-                        <button class="remove-file" onclick="removeFile(${index})" title="Remover arquivo">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('');
-
-                if (selectedFiles.length === 1) {
-                    infoAlert.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        <span>1 arquivo pronto. Adicione até ${MAX_FILES - 1} arquivos adicionais para processamento paralelo!</span>
-                    `;
-                    uploadBtnText.textContent = 'Processar Arquivo';
-                } else {
-                    infoAlert.innerHTML = `
-                        <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        <span>${selectedFiles.length} arquivos prontos para processamento simultâneo! ⚡</span>
-                    `;
-                    uploadBtnText.textContent = 'Processar Arquivos';
-                }
-            } else {
-                resetForm();
-            }
-        }
-
-        cancelBtn.addEventListener('click', () => {
-            if (confirm('Deseja limpar todos os arquivos selecionados?')) {
-                selectedFiles = [];
-                resetForm();
-            }
-        });
-
-        uploadBtn.addEventListener('click', async () => {
-            if (selectedFiles.length === 0) return;
-
-            // O N8N sempre retorna 1 arquivo (ZIP se múltiplos, ou Excel se único)
-            expectedFilesCount = 1;
-            processedFiles = [];
-
-            // Transição para tela de processamento
-            showProcessingScreen();
-
-            const formData = new FormData();
-            selectedFiles.forEach((file, index) => {
-                formData.append(`file${index + 1}`, file);
-            });
-
-            try {
-                const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/processar-8-arquivos';
-                
-                processingText.textContent = 'Enviando arquivos para o N8N...';
-
-                const response = await fetch(webhookURL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    processingText.textContent = 'Recebendo resposta do N8N...';
-                    
-                    const blob = await response.blob();
-                    const contentType = response.headers.get('content-type');
-                    
-                    // Pega o nome do arquivo do header ou usa nome padrão
-                    const contentDisposition = response.headers.get('content-disposition');
-                    let fileName = 'arquivo_processado.xlsx';
-                    
-                    if (contentDisposition) {
-                        const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                        if (fileNameMatch && fileNameMatch[1]) {
-                            fileName = fileNameMatch[1].replace(/['"]/g, '');
-                        }
-                    } else if (contentType) {
-                        // Define nome baseado no tipo
-                        if (contentType.includes('zip')) {
-                            fileName = `processados_${new Date().toISOString().split('T')[0]}.zip`;
-                        } else if (contentType.includes('excel') || contentType.includes('spreadsheet')) {
-                            fileName = 'arquivo_processado.xlsx';
-                        }
-                    }
-                    
-                    // Adiciona o arquivo recebido
-                    processedFiles.push({
-                        name: fileName,
-                        size: blob.size,
-                        type: contentType || 'application/octet-stream'
-                    });
-                    
-                    processingText.textContent = 'Arquivo recebido do N8N!';
-                    setTimeout(() => {
-                        showResultsScreen();
-                    }, 500);
-                } else {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Erro no processamento');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                alert(`❌ Erro ao processar arquivos: ${error.message}\n\nTente novamente.`);
-                showUploadScreen();
-            }
-        });
-
-        function showProcessingScreen() {
-            uploadScreen.classList.add('hidden');
-            processingScreen.classList.add('active');
-            resultsScreen.classList.remove('active');
-            processingText.textContent = 'Enviando arquivos para o N8N...';
-            processingCounter.textContent = `Aguardando resposta do N8N...`;
-        }
-
-        function showResultsScreen() {
-            uploadScreen.classList.add('hidden');
-            processingScreen.classList.remove('active');
-            resultsScreen.classList.add('active');
-            
-            const totalFiles = processedFiles.length;
-            successMessage.textContent = `${totalFiles} arquivo(s) recebido(s) do N8N`;
-            
-            resultsGrid.innerHTML = processedFiles.map((file, index) => {
-                // Define o ícone baseado no tipo de arquivo
-                let iconColor = 'rgba(59, 130, 246, 0.1)'; // azul padrão
-                let iconStroke = 'var(--info-color)';
-                
-                if (file.type && file.type.includes('zip')) {
-                    iconColor = 'rgba(147, 51, 234, 0.1)'; // roxo para ZIP
-                    iconStroke = '#9333ea';
-                } else if (file.name.endsWith('.zip')) {
-                    iconColor = 'rgba(147, 51, 234, 0.1)';
-                    iconStroke = '#9333ea';
-                }
-                
-                return `
-                    <div class="result-item">
-                        <div class="result-icon" style="background: ${iconColor};">
-                            <svg fill="currentColor" viewBox="0 0 20 20" style="color: ${iconStroke};">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div class="result-details">
-                            <div class="result-name" title="${file.name}">${file.name}</div>
-                            <div class="result-size">${formatFileSize(file.size)}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function showUploadScreen() {
-            uploadScreen.classList.remove('hidden');
-            processingScreen.classList.remove('active');
-            resultsScreen.classList.remove('active');
-        }
-
-        newUploadBtn.addEventListener('click', () => {
-            selectedFiles = [];
-            processedFiles = [];
-            expectedFilesCount = 0;
-            showUploadScreen();
-            resetForm();
-        });
-
-        function resetForm() {
-            filesList.classList.remove('active');
-            uploadArea.style.display = 'block';
-            uploadBtn.disabled = true;
-            addMoreBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            fileCounter.textContent = '0/8';
-            uploadBtn.innerHTML = `
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <button id="btnChoose" class="btn ghost" type="button" title="Selecionar arquivos">
+                <!-- folder plus icon -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2z"/>
+                  <path d="M12 11v6M9 14h6"/>
                 </svg>
-                <span id="uploadBtnText">Processar Arquivos</span>
-            `;
-            infoAlert.innerHTML = `
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                Selecionar
+              </button>
+              <div style="font-size:0.85rem;color:var(--muted)">Nenhum envio ainda</div>
+            </div>
+          </div>
+
+          <input id="fileInput" type="file" accept=".xlsx,.xls" multiple style="display:none" />
+
+          <div id="filesList" class="files-list" aria-live="polite" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="color:var(--muted); font-weight:600">Arquivos prontos</div>
+              <div style="display:flex; gap:8px; align-items:center">
+                <button id="btnClear" class="btn" type="button" title="Limpar seleção">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+                    <path d="M3 6h18" />
+                    <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+                    <path d="M10 11v6M14 11v6" />
+                  </svg>
+                  Limpar
+                </button>
+
+                <button id="btnAddMore" class="btn" type="button" title="Adicionar mais" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            <div id="filesGrid" class="files-grid" style="margin-top:12px"></div>
+
+            <div class="controls" style="margin-top:18px">
+              <div style="flex:1"></div>
+              <button id="btnProcess" class="btn primary" disabled type="button" title="Enviar para processamento">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <path d="M7 10l5-5 5 5" />
+                  <path d="M12 5v12" />
                 </svg>
-                <span>Adicione até 8 arquivos Excel para processamento simultâneo!</span>
-            `;
+                Processar
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Processing Screen ===== -->
+      <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
+        <div class="processing">
+          <div class="spinner" role="status" aria-hidden="true"></div>
+          <h3 id="processingTitle">Processando arquivos</h3>
+          <p id="processingSubtitle">Enviando para o serviço. Aguarde...</p>
+          <div style="margin-top:18px; display:flex; gap:10px; justify-content:center">
+            <button id="btnCancelProcessing" class="btn ghost" type="button">Cancelar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Results Screen ===== -->
+      <section id="resultsScreen" style="display:none; border-top:1px solid var(--border)">
+        <div class="results">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 id="resultsTitle" style="margin:0">Processamento concluído</h2>
+              <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivos retornados pelo serviço</div>
+            </div>
+            <div>
+              <button id="btnNew" class="btn" type="button">Novo envio</button>
+            </div>
+          </div>
+
+          <div id="resultsGrid" class="results-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /*
+      Versão repaginada e mais robusta do frontend:
+      - UI corporativa, sem emojis (apenas ícones SVG).
+      - Fluxo: upload -> processing -> results.
+      - Ao receber blob do n8n, cria URL para download e exibe botão.
+      - Melhor manipulação do DOM sem atributos inline (onclick).
+      - Limpeza de object URLs no reinício.
+    */
+
+    const MAX_FILES = 8;
+    let selectedFiles = [];
+    let processedFiles = []; // { name, size, type, url, blob }
+    let objectUrls = [];
+
+    // Elementos
+    const uploadScreen = document.getElementById('uploadScreen');
+    const processingScreen = document.getElementById('processingScreen');
+    const resultsScreen = document.getElementById('resultsScreen');
+
+    const uploadArea = document.getElementById('uploadArea');
+    const btnChoose = document.getElementById('btnChoose');
+    const fileInput = document.getElementById('fileInput');
+    const filesList = document.getElementById('filesList');
+    const filesGrid = document.getElementById('filesGrid');
+    const counterBadge = document.getElementById('counterBadge');
+    const btnProcess = document.getElementById('btnProcess');
+    const btnAddMore = document.getElementById('btnAddMore');
+    const btnClear = document.getElementById('btnClear');
+
+    const processingTitle = document.getElementById('processingTitle');
+    const processingSubtitle = document.getElementById('processingSubtitle');
+    const btnCancelProcessing = document.getElementById('btnCancelProcessing');
+
+    const resultsGrid = document.getElementById('resultsGrid');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsSubtitle = document.getElementById('resultsSubtitle');
+    const btnNew = document.getElementById('btnNew');
+
+    // Accessibility: clicking upload area triggers file input
+    uploadArea.addEventListener('click', () => fileInput.click());
+    btnChoose.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+
+    // Drag & drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('hover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('hover');
+      const files = Array.from(e.dataTransfer.files || []);
+      handleIncomingFiles(files);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      handleIncomingFiles(Array.from(e.target.files));
+      fileInput.value = '';
+    });
+
+    btnAddMore.addEventListener('click', () => fileInput.click());
+    btnClear.addEventListener('click', () => {
+      if (!selectedFiles.length) return;
+      if (confirm('Deseja remover todos os arquivos selecionados?')) {
+        selectedFiles = [];
+        renderFilesList();
+      }
+    });
+
+    btnProcess.addEventListener('click', () => {
+      if (!selectedFiles.length) return;
+      startProcessing();
+    });
+
+    btnCancelProcessing.addEventListener('click', () => {
+      // Permite voltar ao upload durante processamento
+      if (confirm('Deseja cancelar o processamento e voltar para a tela de upload?')) {
+        // Observação: se a requisição estiver em andamento, não há garantia de cancelamento sem AbortController.
+        // Aqui apenas voltamos à tela inicial e mantemos o upload para novo envio.
+        showUpload();
+      }
+    });
+
+    btnNew.addEventListener('click', () => {
+      cleanupProcessed();
+      selectedFiles = [];
+      processedFiles = [];
+      showUpload();
+      renderFilesList();
+    });
+
+    // ===== helpers =====
+    function handleIncomingFiles(files){
+      // filtra extensões xlsx/xls
+      const valid = files.filter(f => {
+        const n = f.name.toLowerCase();
+        return n.endsWith('.xlsx') || n.endsWith('.xls');
+      });
+
+      if (!valid.length){
+        alert('Apenas arquivos .xlsx ou .xls são aceitos.');
+        return;
+      }
+
+      const remaining = MAX_FILES - selectedFiles.length;
+      const toAdd = valid.slice(0, remaining);
+      selectedFiles = selectedFiles.concat(toAdd);
+
+      if (valid.length > toAdd.length){
+        alert(`Atenção: máximo ${MAX_FILES} arquivos. ${valid.length - toAdd.length} arquivo(s) não foram adicionados.`);
+      }
+      renderFilesList();
+    }
+
+    function renderFilesList(){
+      counterBadge.textContent = `${selectedFiles.length} / ${MAX_FILES}`;
+
+      if (!selectedFiles.length){
+        filesList.style.display = 'none';
+        btnProcess.disabled = true;
+        btnAddMore.style.display = 'none';
+        return;
+      }
+
+      filesList.style.display = 'block';
+      btnProcess.disabled = false;
+      btnAddMore.style.display = selectedFiles.length < MAX_FILES ? 'inline-flex' : 'none';
+
+      // clear grid and rebuild
+      filesGrid.innerHTML = '';
+      selectedFiles.forEach((file, idx) => {
+        const card = document.createElement('div');
+        card.className = 'file-card';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'file-thumb';
+        thumb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+
+        const meta = document.createElement('div');
+        meta.className = 'file-meta';
+        const name = document.createElement('div');
+        name.className = 'file-name';
+        name.title = file.name;
+        name.textContent = file.name;
+        const size = document.createElement('div');
+        size.className = 'file-size';
+        size.textContent = formatBytes(file.size);
+
+        meta.appendChild(name);
+        meta.appendChild(size);
+
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+        const btnRemove = document.createElement('button');
+        btnRemove.type = 'button';
+        btnRemove.title = 'Remover arquivo';
+        btnRemove.className = 'icon-btn danger';
+        btnRemove.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger)"><path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/></svg>';
+        btnRemove.addEventListener('click', () => {
+          selectedFiles.splice(idx, 1);
+          renderFilesList();
+        });
+        actions.appendChild(btnRemove);
+
+        card.appendChild(thumb);
+        card.appendChild(meta);
+        card.appendChild(actions);
+
+        filesGrid.appendChild(card);
+      });
+    }
+
+    function formatBytes(bytes){
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B','KB','MB','GB','TB'];
+      const i = Math.floor(Math.log(bytes)/Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(i ? 2 : 0) + ' ' + sizes[i];
+    }
+
+    // ===== processing =====
+    async function startProcessing(){
+      showProcessing();
+      processingTitle.textContent = 'Enviando arquivos para processamento';
+      processingSubtitle.textContent = 'Aguarde — enviando os arquivos para o serviço.';
+
+      // montar FormData
+      const fd = new FormData();
+      selectedFiles.forEach((f, i) => fd.append(`file${i+1}`, f));
+
+      // Endpoint (substitua pela sua URL real)
+      const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/processar-8-arquivos';
+
+      try {
+        const resp = await fetch(webhookURL, {
+          method: 'POST',
+          body: fd
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text().catch(()=> '');
+          throw new Error(text || `Resposta do servidor: ${resp.status}`);
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        // recebe blob
+        const blob = await resp.blob();
+        const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
+        let fileName = 'arquivo_processado';
+        // tenta obter filename do content-disposition
+        const cd = resp.headers.get('content-disposition');
+        if (cd){
+          const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
+          if (m && m[1]) fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
+        } else {
+          // fallback para extensão baseada no tipo
+          if (contentType.includes('zip')) fileName = `processados_${new Date().toISOString().slice(0,10)}.zip`;
+          else if (contentType.includes('spreadsheet') || contentType.includes('excel') || /\.xlsx?$/i.test(selectedFiles[0]?.name || '')) fileName = 'arquivo_processado.xlsx';
+          else fileName = `arquivo_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
         }
-    </script>
+
+        // cria URL para download e guarda info
+        const url = URL.createObjectURL(blob);
+        objectUrls.push(url);
+        processedFiles = [{
+          name: fileName,
+          size: blob.size,
+          type: contentType,
+          url,
+          blob
+        }];
+
+        // mostra resultados
+        processingTitle.textContent = 'Concluído';
+        processingSubtitle.textContent = 'Arquivo recebido com sucesso.';
+        // pequena pausa para transição visual
+        setTimeout(() => showResults(), 500);
+
+      } catch (err){
+        console.error('Erro no envio/recebimento:', err);
+        processingTitle.textContent = 'Erro';
+        processingSubtitle.textContent = 'Ocorreu um erro no processamento.';
+        alert('Erro ao processar: ' + (err.message || err));
+        // volta para upload para permitir nova tentativa
+        showUpload();
+      }
+    }
+
+    // ===== UI transitions =====
+    function showProcessing(){
+      uploadScreen.style.display = 'none';
+      filesList.style.display = 'none';
+      processingScreen.style.display = 'block';
+      resultsScreen.style.display = 'none';
+    }
+
+    function showResults(){
+      uploadScreen.style.display = 'none';
+      processingScreen.style.display = 'none';
+      resultsScreen.style.display = 'block';
+      renderResults();
+    }
+
+    function showUpload(){
+      uploadScreen.style.display = 'block';
+      processingScreen.style.display = 'none';
+      resultsScreen.style.display = 'none';
+    }
+
+    // ===== render results =====
+    function renderResults(){
+      resultsGrid.innerHTML = '';
+      if (!processedFiles.length){
+        resultsTitle.textContent = 'Nenhum arquivo retornado';
+        resultsSubtitle.textContent = 'Não foram encontrados arquivos após o processamento.';
+        return;
+      }
+
+      resultsTitle.textContent = 'Processamento concluído';
+      resultsSubtitle.textContent = `${processedFiles.length} arquivo(s) disponível(is) para download`;
+
+      processedFiles.forEach((f, idx) => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+
+        const meta = document.createElement('div');
+        meta.className = 'result-meta';
+
+        const thumb = document.createElement('div');
+        thumb.className = 'result-thumb';
+        thumb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+
+        const details = document.createElement('div');
+        details.style.minWidth = '0';
+        const name = document.createElement('div');
+        name.className = 'result-name';
+        name.title = f.name;
+        name.textContent = f.name;
+        const size = document.createElement('div');
+        size.className = 'result-size';
+        size.textContent = formatBytes(f.size);
+
+        details.appendChild(name);
+        details.appendChild(size);
+
+        meta.appendChild(thumb);
+        meta.appendChild(details);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '8px';
+
+        const dl = document.createElement('a');
+        dl.className = 'btn';
+        dl.href = f.url;
+        dl.download = f.name;
+        dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>Download';
+        // abrir em nova aba também
+        dl.target = '_blank';
+        actions.appendChild(dl);
+
+        const open = document.createElement('button');
+        open.className = 'btn ghost';
+        open.type = 'button';
+        open.textContent = 'Abrir';
+        open.addEventListener('click', () => {
+          // abrir o blob em nova aba
+          window.open(f.url, '_blank');
+        });
+        actions.appendChild(open);
+
+        item.appendChild(meta);
+        item.appendChild(actions);
+
+        resultsGrid.appendChild(item);
+      });
+    }
+
+    function cleanupProcessed(){
+      // revoga object URLs criados
+      objectUrls.forEach(u => URL.revokeObjectURL(u));
+      objectUrls = [];
+    }
+
+    // Limpeza quando usuário fecha / inicia novo envio
+    window.addEventListener('beforeunload', () => cleanupProcessed());
+
+    // Inicializa estado
+    renderFilesList();
+
+    // Observação: você pode substituir o fetch direto por uma lógica que faça polling
+    // caso o n8n aceite apenas responder async e disponibilizar arquivos posteriormente.
+    // Aqui assumimos resposta direta com blob.
+
+  </script>
 </body>
 </html>
