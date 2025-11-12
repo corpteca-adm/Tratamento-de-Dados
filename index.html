@@ -793,7 +793,6 @@
                 const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/processar-8-arquivos';
                 
                 processingText.textContent = 'Enviando arquivos para o N8N...';
-                updateProcessingCounter();
 
                 const response = await fetch(webhookURL, {
                     method: 'POST',
