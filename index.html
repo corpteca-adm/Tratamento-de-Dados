@@ -80,7 +80,7 @@
       padding:10px 14px; border-radius:8px; border:1px solid transparent; background:transparent;
       cursor:pointer; font-weight:600; display:inline-flex; gap:8px; align-items:center;
       transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, opacity .12s ease;
-      vertical-align:middle;
+      vertical-align:middle; text-decoration:none;
     }
     .btn:focus{ outline:3px solid rgba(11,95,255,0.12); outline-offset:2px }
     .btn:hover{ transform:translateY(-3px); box-shadow:0 10px 18px rgba(12,20,36,0.06) }
@@ -89,7 +89,6 @@
     .btn.primary{ background:var(--primary); color:white; border-color:transparent; box-shadow:0 6px 12px rgba(11,95,255,0.08); }
     .btn.ghost{ background:#fff; color:var(--text); border:1px solid var(--border); }
 
-    /* ensure svg/icon spacing and consistent text placement */
     .btn svg{ display:inline-block; width:16px; height:16px; flex-shrink:0; }
     .btn .btn-label{ display:inline-block; line-height:1; }
 
@@ -128,7 +127,6 @@
 
     @media (max-width:720px){ .files-grid,.results-grid{ grid-template-columns:1fr } .controls{ flex-direction:column; align-items:stretch } }
 
-    /* visually hidden but accessible input label approach */
     .visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px, 1px, 1px, 1px); white-space:nowrap; border:0; padding:0; margin:-1px; }
   </style>
 </head>
@@ -177,7 +175,6 @@
             </div>
 
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-              <!-- label for file input to avoid programmatic double-click issues -->
               <label id="btnChoose" class="btn ghost" for="fileInput" title="Selecionar arquivos" role="button" aria-label="Selecionar arquivos">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2z"/>
@@ -189,14 +186,12 @@
             </div>
           </div>
 
-          <!-- hidden file input -->
           <input id="fileInput" class="visually-hidden" type="file" accept=".xlsx,.xls" multiple aria-hidden="false" />
 
           <div id="filesList" class="files-list" aria-live="polite" style="display:none">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="color:var(--muted); font-weight:600">Arquivos prontos</div>
               <div style="display:flex; gap:8px; align-items:center">
-                <!-- use ghost style for clearer affordance; icon + text in span -->
                 <button id="btnClear" class="btn ghost" type="button" title="Limpar seleção" aria-label="Limpar todos os arquivos">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                     <path d="M3 6h18" />
@@ -232,7 +227,7 @@
         </div>
       </section>
 
-      <!-- Processing Screen (Cancel removed) -->
+      <!-- Processing Screen (sem botão de cancelar) -->
       <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="processing">
           <div class="spinner" role="status" aria-hidden="true"></div>
@@ -250,7 +245,12 @@
               <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivos retornados pelo serviço</div>
             </div>
             <div>
-              <button id="btnNew" class="btn" type="button"><span class="btn-label">Novo envio</span></button>
+              <button id="btnNew" class="btn primary" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
+                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span class="btn-label">Novo envio</span>
+              </button>
             </div>
           </div>
 
@@ -261,18 +261,6 @@
   </div>
 
   <script>
-    /*
-      Correções importantes aplicadas:
-      - Todos os ícones agora são inline SVGs (sem dependência de font-icon).
-      - Padronizei markup dos botões: <svg> + <span class="btn-label">Texto</span>.
-      - Evitei que o clique no label "Selecionar" propague para o uploadArea (stopPropagation).
-      - Tornamos o uploadArea click handler robusto: só abre file dialog quando não clicado no label.
-      - Reforcei o handler do botão "Limpar" e garanti que o texto e o ícone sejam consistentes (não há glifos).
-      - Mantive animações sutis para hover/active e foco visível (melhora a sensação tátil).
-      - Removi botão "Cancelar" da tela de processamento conforme solicitado.
-      - Criei object URLs para arquivos retornados (download) e faço clean-up on beforeunload / novo envio.
-    */
-
     const MAX_FILES = 8;
     let selectedFiles = [];
     let processedFiles = [];
@@ -300,17 +288,12 @@
     const resultsSubtitle = document.getElementById('resultsSubtitle');
     const btnNew = document.getElementById('btnNew');
 
-    // Prevent uploadArea click from firing when clicking the label/button "Selecionar".
-    // Some browsers can deliver events where e.target is inside the label (svg/text) so stopPropagation on label.
+    // Prevent double dialog when clicking label inside uploadArea
     btnChoose.addEventListener('click', (e) => {
       e.stopPropagation();
-      // label will naturally trigger file input via for="" attribute
     });
 
-    // uploadArea click opens file dialog (unless click originated in btnChoose)
     uploadArea.addEventListener('click', (e) => {
-      // if user clicked anywhere inside the label (or its children) we already stopped propagation,
-      // but add a defensive check to avoid double dialog:
       if (e.target.closest && e.target.closest('#btnChoose')) return;
       fileInput.click();
     });
@@ -328,13 +311,12 @@
     // File selection
     fileInput.addEventListener('change', (e) => {
       handleIncomingFiles(Array.from(e.target.files || []));
-      // reset so same name can be selected again later
       fileInput.value = '';
     });
 
     btnAddMore.addEventListener('click', () => fileInput.click());
 
-    // Clear button robust handler
+    // Clear button
     let clearGuard = false;
     btnClear.addEventListener('click', () => {
       if (clearGuard) return;
@@ -466,16 +448,16 @@
 
         const blob = await resp.blob();
         const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
-        let fileName = 'arquivo_processado';
-
+        
+        // Extrai o nome do arquivo do header Content-Disposition
+        let fileName = 'arquivo_processado.xlsx';
         const cd = resp.headers.get('content-disposition');
         if (cd){
+          // tenta extrair filename do Content-Disposition (RFC 6266 / RFC 2183)
           const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
-          if (m && m[1]) fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
-        } else {
-          if (contentType.includes('zip')) fileName = `processados_${new Date().toISOString().slice(0,10)}.zip`;
-          else if (contentType.includes('spreadsheet') || contentType.includes('excel') || /\.xlsx?$/i.test(selectedFiles[0]?.name || '')) fileName = 'arquivo_processado.xlsx';
-          else fileName = `arquivo_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+          if (m && m[1]){
+            fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
+          }
         }
 
         const url = URL.createObjectURL(blob);
@@ -556,20 +538,20 @@
         actions.style.display = 'flex';
         actions.style.gap = '8px';
 
-        const dl = document.createElement('a');
-        dl.className = 'btn';
-        dl.href = f.url;
-        dl.download = f.name;
-        dl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg><span class="btn-label">Download</span>';
-        dl.target = '_blank';
-        actions.appendChild(dl);
-
-        const open = document.createElement('button');
-        open.className = 'btn ghost';
-        open.type = 'button';
-        open.innerHTML = '<span class="btn-label">Abrir</span>';
-        open.addEventListener('click', () => { window.open(f.url, '_blank'); });
-        actions.appendChild(open);
+        // Botão Download (button, não link)
+        const dlBtn = document.createElement('button');
+        dlBtn.className = 'btn primary';
+        dlBtn.type = 'button';
+        dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="btn-label">Download</span>';
+        dlBtn.addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = f.url;
+          a.download = f.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        });
+        actions.appendChild(dlBtn);
 
         item.appendChild(meta);
         item.appendChild(actions);
