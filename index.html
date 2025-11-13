@@ -428,6 +428,41 @@
       return (bytes / Math.pow(k, i)).toFixed(i ? 2 : 0) + ' ' + sizes[i];
     }
 
+    // ==================== FUNÇÃO MELHORADA ====================
+    /**
+     * Extrai o nome do arquivo do header Content-Disposition
+     * Suporta RFC 5987 (filename*=UTF-8'...) e RFC 2183/2616 (filename=...)
+     */
+    function extractFileNameFromDisposition(cd) {
+      if (!cd) return null;
+      
+      // Tenta RFC 5987: filename*=UTF-8''encoded-name
+      let match = cd.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
+      if (match && match[1]) {
+        let filename = match[1].trim();
+        // Remove aspas se houver
+        filename = filename.replace(/^["']|["']$/g, '');
+        // Se foi encoded em UTF-8, decodifica
+        try {
+          filename = decodeURIComponent(filename);
+        } catch (e) {
+          // Se falhar na decodificação, usa como está
+        }
+        return filename;
+      }
+      
+      // Tenta RFC 2183/2616 padrão: filename="name" ou filename=name
+      match = cd.match(/filename=([^;]+)/i);
+      if (match && match[1]) {
+        let filename = match[1].trim();
+        // Remove aspas
+        filename = filename.replace(/^["']|["']$/g, '');
+        return filename;
+      }
+      
+      return null;
+    }
+
     async function startProcessing(){
       showProcessing();
       processingTitle.textContent = 'Enviando arquivos para processamento';
@@ -449,15 +484,18 @@
         const blob = await resp.blob();
         const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
         
-        // Extrai o nome do arquivo do header Content-Disposition
-        let fileName = 'arquivo_processado.xlsx';
+        // ========== EXTRAI O NOME CORRETO DO ARQUIVO ==========
+        let fileName = 'arquivo_processado.zip'; // fallback padrão
         const cd = resp.headers.get('content-disposition');
-        if (cd){
-          // tenta extrair filename do Content-Disposition (RFC 6266 / RFC 2183)
-          const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
-          if (m && m[1]){
-            fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
+        
+        if (cd) {
+          const extracted = extractFileNameFromDisposition(cd);
+          if (extracted) {
+            fileName = extracted;
+            console.log('Nome do arquivo extraído:', fileName);
           }
+        } else {
+          console.warn('Header Content-Disposition não encontrado na resposta');
         }
 
         const url = URL.createObjectURL(blob);
@@ -465,7 +503,7 @@
         processedFiles = [{ name: fileName, size: blob.size, type: contentType, url, blob }];
 
         processingTitle.textContent = 'Concluído';
-        processingSubtitle.textContent = 'Arquivo recebido com sucesso.';
+        processingSubtitle.textContent = 'Arquivo(s) recebido(s) com sucesso.';
         setTimeout(() => showResults(), 450);
 
       } catch (err){
