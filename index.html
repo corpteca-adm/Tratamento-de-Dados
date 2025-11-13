@@ -35,255 +35,101 @@
       line-height:1.45;
     }
 
-    /* ===== layout ===== */
-    .wrap{
-      max-width:980px;
-      margin:36px auto;
-      padding:24px;
-    }
+    .wrap{ max-width:980px; margin:36px auto; padding:24px; }
 
     header.appbar{
-      display:flex;
-      align-items:center;
-      gap:16px;
-      padding:18px 24px;
-      background:var(--surface);
-      border-radius:12px;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
+      display:flex; align-items:center; gap:16px;
+      padding:18px 24px; background:var(--surface);
+      border-radius:12px; box-shadow:var(--shadow); border:1px solid var(--border);
     }
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-    .brand-logo{
-      width:44px;
-      height:44px;
-      background:linear-gradient(180deg,var(--primary),var(--primary-600));
-      border-radius:8px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      font-weight:700;
+    .brand{ display:flex; gap:12px; align-items:center; }
+    .brand-logo{ width:44px; height:44px; background:linear-gradient(180deg,var(--primary),var(--primary-600));
+      border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;
       box-shadow:0 4px 12px rgba(11,95,255,0.15);
     }
-    .brand-title{
-      font-weight:600;
-      font-size:1.0625rem;
-    }
-    .brand-sub{
-      font-size:0.875rem;
-      color:var(--muted);
-    }
+    .brand-title{ font-weight:600; font-size:1.0625rem; }
+    .brand-sub{ font-size:0.875rem; color:var(--muted); }
 
-    main.card{
-      margin-top:20px;
-      background:var(--surface);
-      border-radius:var(--radius);
-      border:1px solid var(--border);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
+    main.card{ margin-top:20px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--border);
+      box-shadow:var(--shadow); overflow:hidden; }
 
-    /* ===== Page: Upload ===== */
-    .card-header{
-      padding:20px 24px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .card-header h1{
-      font-size:1.0625rem;
-      margin:0;
-      font-weight:600;
-    }
-    .card-header p{
-      margin:0;
-      color:var(--muted);
-      font-size:0.875rem;
-    }
+    .card-header{ padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+    .card-header h1{ font-size:1.0625rem; margin:0; font-weight:600; }
+    .card-header p{ margin:0; color:var(--muted); font-size:0.875rem; }
 
-    .card-body{
-      padding:26px;
-    }
+    .card-body{ padding:26px; }
 
     .upload-area{
-      border-radius:12px;
-      border:1px dashed var(--border);
-      padding:30px;
-      display:flex;
-      gap:20px;
-      align-items:center;
-      background:var(--glass);
-      transition:all .16s ease;
-      cursor:pointer;
+      border-radius:12px; border:1px dashed var(--border); padding:30px; display:flex; gap:20px; align-items:center;
+      background:var(--glass); transition:all .16s ease; cursor:pointer; position:relative;
     }
-    .upload-area.hover{ box-shadow:0 6px 18px rgba(11,95,255,0.06); border-color:var(--primary); transform:translateY(-2px) }
-    .upload-icon{
-      width:64px;
-      height:64px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:10px;
-      background:linear-gradient(180deg, rgba(11,95,255,0.09), rgba(11,95,255,0.04));
-      flex-shrink:0;
-    }
-    .upload-icon svg{ width:32px; height:32px; color:var(--primary) }
+    .upload-area.hover{ box-shadow:0 6px 18px rgba(11,95,255,0.06); border-color:var(--primary); transform:translateY(-2px); }
+    .upload-icon{ width:64px; height:64px; display:flex; align-items:center; justify-content:center; border-radius:10px;
+      background:linear-gradient(180deg, rgba(11,95,255,0.09), rgba(11,95,255,0.04)); flex-shrink:0; }
+    .upload-icon svg{ width:32px; height:32px; color:var(--primary); display:block; }
 
-    .upload-info{
-      flex:1;
-    }
+    .upload-info{ flex:1; }
     .upload-info h2{ margin:0; font-size:1.0625rem; font-weight:600; }
     .upload-info p{ margin:6px 0 0; color:var(--muted); font-size:0.95rem }
     .file-types{ margin-top:8px; color:var(--muted); font-size:0.85rem }
 
-    .controls{
-      margin-top:18px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:flex-end;
-    }
+    .controls{ margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:flex-end; }
 
-    /* Buttons - subtle interactive */
+    /* Buttons - subtle interactive and predictable layout */
     .btn{
-      padding:10px 14px;
-      border-radius:8px;
-      border:1px solid transparent;
-      background:transparent;
-      cursor:pointer;
-      font-weight:600;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
+      padding:10px 14px; border-radius:8px; border:1px solid transparent; background:transparent;
+      cursor:pointer; font-weight:600; display:inline-flex; gap:8px; align-items:center;
       transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, opacity .12s ease;
+      vertical-align:middle;
     }
     .btn:focus{ outline:3px solid rgba(11,95,255,0.12); outline-offset:2px }
     .btn:hover{ transform:translateY(-3px); box-shadow:0 10px 18px rgba(12,20,36,0.06) }
     .btn:active{ transform:translateY(-1px) scale(.995); opacity:.98 }
 
-    .btn.primary{
-      background:var(--primary);
-      color:white;
-      border-color:transparent;
-      box-shadow:0 6px 12px rgba(11,95,255,0.08);
-    }
-    .btn.ghost{
-      background:#fff;
-      color:var(--text);
-      border:1px solid var(--border);
-    }
+    .btn.primary{ background:var(--primary); color:white; border-color:transparent; box-shadow:0 6px 12px rgba(11,95,255,0.08); }
+    .btn.ghost{ background:#fff; color:var(--text); border:1px solid var(--border); }
+
+    /* ensure svg/icon spacing and consistent text placement */
+    .btn svg{ display:inline-block; width:16px; height:16px; flex-shrink:0; }
+    .btn .btn-label{ display:inline-block; line-height:1; }
+
     .btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none }
 
-    /* files list */
     .files-list{ margin-top:18px }
-    .files-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      margin-top:12px;
-    }
-    .file-card{
-      background:transparent;
-      border-radius:10px;
-      padding:12px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      border:1px solid var(--border);
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
+    .files-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+    .file-card{ background:transparent; border-radius:10px; padding:12px; display:flex; gap:12px; align-items:center; border:1px solid var(--border);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
     .file-card:hover{ transform:translateY(-4px); box-shadow:0 8px 20px rgba(12,20,36,0.05); border-color:rgba(11,95,255,0.06) }
-    .file-thumb{
-      width:44px;
-      height:44px;
-      border-radius:8px;
-      background:linear-gradient(180deg,rgba(16,185,129,0.06),rgba(16,185,129,0.02));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--success);
-      flex-shrink:0;
-    }
+    .file-thumb{ width:44px; height:44px; border-radius:8px; background:linear-gradient(180deg,rgba(16,185,129,0.06),rgba(16,185,129,0.02));
+      display:flex; align-items:center; justify-content:center; color:var(--success); flex-shrink:0; }
     .file-meta{ flex:1; min-width:0 }
     .file-name{ font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
     .file-size{ color:var(--muted); font-size:0.85rem; margin-top:4px }
 
     .file-actions{ display:flex; gap:8px; align-items:center }
-    .icon-btn{
-      width:36px;
-      height:36px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:8px;
-      border:1px solid transparent;
-      background:transparent;
-      cursor:pointer;
-      transition:transform .12s ease, background-color .12s ease, border-color .12s ease;
-    }
+    .icon-btn{ width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:8px; border:1px solid transparent;
+      background:transparent; cursor:pointer; transition:transform .12s ease, background-color .12s ease, border-color .12s ease; }
     .icon-btn:hover{ background:rgba(11,95,255,0.04); transform:translateY(-2px) }
     .icon-btn.danger{ border-color:rgba(239,68,68,0.08); color:var(--danger) }
 
-    /* ===== Processing ===== */
-    .processing{
-      padding:36px;
-      text-align:center;
-    }
-    .spinner{
-      margin:0 auto 18px;
-      width:72px;height:72px;border-radius:50%;
-      border:6px solid var(--border); border-top-color:var(--primary);
-      animation:spin 1.05s linear infinite;
-    }
+    .processing{ padding:36px; text-align:center; }
+    .spinner{ margin:0 auto 18px; width:72px;height:72px;border-radius:50%; border:6px solid var(--border); border-top-color:var(--primary); animation:spin 1.05s linear infinite; }
     @keyframes spin{ to{ transform:rotate(360deg)} }
     .processing h3{ margin:8px 0 0; font-size:1.125rem; font-weight:700 }
     .processing p{ margin:8px 0 0; color:var(--muted) }
 
-    /* ===== Results ===== */
-    .results{
-      padding:22px;
-    }
-    .results-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      margin-top:12px;
-    }
-    .result-item{
-      padding:12px;
-      border-radius:10px;
-      border:1px solid var(--border);
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-    }
+    .results{ padding:22px; }
+    .results-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+    .result-item{ padding:12px; border-radius:10px; border:1px solid var(--border); display:flex; gap:12px; align-items:center; justify-content:space-between; }
     .result-meta{ display:flex; gap:12px; align-items:center; min-width:0 }
-    .result-thumb{
-      width:44px;height:44px;border-radius:8px;background:linear-gradient(180deg,rgba(59,130,246,0.06),rgba(59,130,246,0.02));
-      display:flex;align-items:center;justify-content:center;color:var(--primary);
-    }
+    .result-thumb{ width:44px;height:44px;border-radius:8px;background:linear-gradient(180deg,rgba(59,130,246,0.06),rgba(59,130,246,0.02)); display:flex;align-items:center;justify-content:center;color:var(--primary); }
     .result-name{ font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
     .result-size{ color:var(--muted); font-size:0.85rem }
 
-    /* responsive */
-    @media (max-width:720px){
-      .files-grid,.results-grid{ grid-template-columns:1fr }
-      .controls{ flex-direction:column; align-items:stretch }
-    }
+    @media (max-width:720px){ .files-grid,.results-grid{ grid-template-columns:1fr } .controls{ flex-direction:column; align-items:stretch } }
 
-    /* visually hidden but focusable input label approach */
-    .visually-hidden{
-      position:absolute !important;
-      height:1px; width:1px;
-      overflow:hidden; clip:rect(1px, 1px, 1px, 1px);
-      white-space:nowrap; border:0; padding:0; margin:-1px;
-    }
+    /* visually hidden but accessible input label approach */
+    .visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px, 1px, 1px, 1px); white-space:nowrap; border:0; padding:0; margin:-1px; }
   </style>
 </head>
 <body>
@@ -311,9 +157,7 @@
             <h1>Carregar arquivos</h1>
             <p id="uploadSubtitle">Selecione até 8 arquivos .xlsx ou .xls para processamento</p>
           </div>
-          <div>
-            <div id="counterBadge" style="text-align:right; color:var(--muted); font-weight:600">0 / 8</div>
-          </div>
+          <div><div id="counterBadge" style="text-align:right; color:var(--muted); font-weight:600">0 / 8</div></div>
         </div>
 
         <div class="card-body">
@@ -334,38 +178,39 @@
 
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
               <!-- label for file input to avoid programmatic double-click issues -->
-              <label id="btnChoose" class="btn ghost" for="fileInput" title="Selecionar arquivos" role="button">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+              <label id="btnChoose" class="btn ghost" for="fileInput" title="Selecionar arquivos" role="button" aria-label="Selecionar arquivos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2z"/>
                   <path d="M12 11v6M9 14h6"/>
                 </svg>
-                Selecionar
+                <span class="btn-label">Selecionar</span>
               </label>
               <div id="uploadHint" style="font-size:0.85rem;color:var(--muted)">Nenhum envio ainda</div>
             </div>
           </div>
 
-          <!-- hidden but accessible input -->
+          <!-- hidden file input -->
           <input id="fileInput" class="visually-hidden" type="file" accept=".xlsx,.xls" multiple aria-hidden="false" />
 
           <div id="filesList" class="files-list" aria-live="polite" style="display:none">
             <div style="display:flex;align-items:center;justify-content:space-between">
               <div style="color:var(--muted); font-weight:600">Arquivos prontos</div>
               <div style="display:flex; gap:8px; align-items:center">
-                <button id="btnClear" class="btn" type="button" title="Limpar seleção">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+                <!-- use ghost style for clearer affordance; icon + text in span -->
+                <button id="btnClear" class="btn ghost" type="button" title="Limpar seleção" aria-label="Limpar todos os arquivos">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                     <path d="M3 6h18" />
                     <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
                     <path d="M10 11v6M14 11v6" />
                   </svg>
-                  Limpar
+                  <span class="btn-label">Limpar</span>
                 </button>
 
                 <button id="btnAddMore" class="btn" type="button" title="Adicionar mais" style="display:none">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                     <path d="M12 5v14M5 12h14" />
                   </svg>
-                  Adicionar
+                  <span class="btn-label">Adicionar</span>
                 </button>
               </div>
             </div>
@@ -375,27 +220,24 @@
             <div class="controls" style="margin-top:18px">
               <div style="flex:1"></div>
               <button id="btnProcess" class="btn primary" disabled type="button" title="Enviar para processamento">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <path d="M7 10l5-5 5 5" />
                   <path d="M12 5v12" />
                 </svg>
-                Processar
+                <span class="btn-label">Processar</span>
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Processing Screen -->
+      <!-- Processing Screen (Cancel removed) -->
       <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="processing">
           <div class="spinner" role="status" aria-hidden="true"></div>
           <h3 id="processingTitle">Processando arquivos</h3>
           <p id="processingSubtitle">Enviando para o serviço. Aguarde...</p>
-          <div style="margin-top:18px; display:flex; gap:10px; justify-content:center">
-            <button id="btnCancelProcessing" class="btn ghost" type="button">Cancelar</button>
-          </div>
         </div>
       </section>
 
@@ -408,7 +250,7 @@
               <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivos retornados pelo serviço</div>
             </div>
             <div>
-              <button id="btnNew" class="btn" type="button">Novo envio</button>
+              <button id="btnNew" class="btn" type="button"><span class="btn-label">Novo envio</span></button>
             </div>
           </div>
 
@@ -420,13 +262,15 @@
 
   <script>
     /*
-      Melhorias implementadas:
-      - Corrigi o "bug" do botão Selecionar (evitava duplo trigger) usando <label for="fileInput"> e evitando que o clique no botão dispare também o click do uploadArea.
-      - Adicionei animações sutis nos botões e cards (hover/active) para feedback visual ao passar/pressionar.
-      - Removi handlers inline; usei listeners e elementos <button>/<label> corretos (type="button") para evitar comportamento inesperado.
-      - Corrigi comportamento de seleção de arquivos: agora a primeira seleção já registra os arquivos; limpo fileInput apenas após processar as entradas.
-      - Ícones do botão 'remover' padronizados e sem problema de renderização.
-      - Ao receber o blob do n8n, cria URL de download (download + abrir em nova aba).
+      Correções importantes aplicadas:
+      - Todos os ícones agora são inline SVGs (sem dependência de font-icon).
+      - Padronizei markup dos botões: <svg> + <span class="btn-label">Texto</span>.
+      - Evitei que o clique no label "Selecionar" propague para o uploadArea (stopPropagation).
+      - Tornamos o uploadArea click handler robusto: só abre file dialog quando não clicado no label.
+      - Reforcei o handler do botão "Limpar" e garanti que o texto e o ícone sejam consistentes (não há glifos).
+      - Mantive animações sutis para hover/active e foco visível (melhora a sensação tátil).
+      - Removi botão "Cancelar" da tela de processamento conforme solicitado.
+      - Criei object URLs para arquivos retornados (download) e faço clean-up on beforeunload / novo envio.
     */
 
     const MAX_FILES = 8;
@@ -435,10 +279,6 @@
     let objectUrls = [];
 
     // Elements
-    const uploadScreen = document.getElementById('uploadScreen');
-    const processingScreen = document.getElementById('processingScreen');
-    const resultsScreen = document.getElementById('resultsScreen');
-
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const filesList = document.getElementById('filesList');
@@ -448,29 +288,35 @@
     const btnAddMore = document.getElementById('btnAddMore');
     const btnClear = document.getElementById('btnClear');
     const uploadHint = document.getElementById('uploadHint');
+    const btnChoose = document.getElementById('btnChoose');
 
+    const processingScreen = document.getElementById('processingScreen');
     const processingTitle = document.getElementById('processingTitle');
     const processingSubtitle = document.getElementById('processingSubtitle');
-    const btnCancelProcessing = document.getElementById('btnCancelProcessing');
 
+    const resultsScreen = document.getElementById('resultsScreen');
     const resultsGrid = document.getElementById('resultsGrid');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsSubtitle = document.getElementById('resultsSubtitle');
     const btnNew = document.getElementById('btnNew');
 
-    // Prevent double file dialog when clicking label inside uploadArea:
+    // Prevent uploadArea click from firing when clicking the label/button "Selecionar".
+    // Some browsers can deliver events where e.target is inside the label (svg/text) so stopPropagation on label.
+    btnChoose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // label will naturally trigger file input via for="" attribute
+    });
+
+    // uploadArea click opens file dialog (unless click originated in btnChoose)
     uploadArea.addEventListener('click', (e) => {
-      // if click target is inside the "Selecionar" label/button, do nothing here
-      if (e.target.closest('#btnChoose')) return;
-      // otherwise open file picker
+      // if user clicked anywhere inside the label (or its children) we already stopped propagation,
+      // but add a defensive check to avoid double dialog:
+      if (e.target.closest && e.target.closest('#btnChoose')) return;
       fileInput.click();
     });
 
-    // drag & drop
-    uploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadArea.classList.add('hover');
-    });
+    // Drag & drop
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('hover'); });
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
     uploadArea.addEventListener('drop', (e) => {
       e.preventDefault();
@@ -479,33 +325,30 @@
       handleIncomingFiles(files);
     });
 
-    // file selection
+    // File selection
     fileInput.addEventListener('change', (e) => {
       handleIncomingFiles(Array.from(e.target.files || []));
-      // keep fileInput.value so user can re-select same filename only AFTER we've processed it;
-      // clear value to allow selecting same file name in the future
+      // reset so same name can be selected again later
       fileInput.value = '';
     });
 
     btnAddMore.addEventListener('click', () => fileInput.click());
 
+    // Clear button robust handler
+    let clearGuard = false;
     btnClear.addEventListener('click', () => {
+      if (clearGuard) return;
       if (!selectedFiles.length) return;
-      if (confirm('Deseja remover todos os arquivos selecionados?')) {
-        selectedFiles = [];
-        renderFilesList();
-      }
+      if (!confirm('Deseja remover todos os arquivos selecionados?')) return;
+      clearGuard = true;
+      setTimeout(() => clearGuard = false, 600);
+      selectedFiles = [];
+      renderFilesList();
     });
 
     btnProcess.addEventListener('click', () => {
       if (!selectedFiles.length) return;
       startProcessing();
-    });
-
-    btnCancelProcessing.addEventListener('click', () => {
-      if (confirm('Deseja cancelar o processamento e voltar para a tela de upload?')) {
-        showUpload();
-      }
     });
 
     btnNew.addEventListener('click', () => {
@@ -559,7 +402,7 @@
 
         const thumb = document.createElement('div');
         thumb.className = 'file-thumb';
-        thumb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+        thumb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
         const meta = document.createElement('div');
         meta.className = 'file-meta';
@@ -580,7 +423,7 @@
         btnRemove.type = 'button';
         btnRemove.title = 'Remover arquivo';
         btnRemove.className = 'icon-btn danger';
-        btnRemove.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger)"><path d="M6 18L18 6M6 6l12 12"/></svg>';
+        btnRemove.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger)"><path d="M6 18L18 6M6 6l12 12"/></svg>';
         btnRemove.addEventListener('click', () => {
           selectedFiles.splice(idx, 1);
           renderFilesList();
@@ -614,10 +457,7 @@
       const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/processar-8-arquivos';
 
       try {
-        const resp = await fetch(webhookURL, {
-          method: 'POST',
-          body: fd
-        });
+        const resp = await fetch(webhookURL, { method: 'POST', body: fd });
 
         if (!resp.ok) {
           const text = await resp.text().catch(()=> '');
@@ -640,13 +480,7 @@
 
         const url = URL.createObjectURL(blob);
         objectUrls.push(url);
-        processedFiles = [{
-          name: fileName,
-          size: blob.size,
-          type: contentType,
-          url,
-          blob
-        }];
+        processedFiles = [{ name: fileName, size: blob.size, type: contentType, url, blob }];
 
         processingTitle.textContent = 'Concluído';
         processingSubtitle.textContent = 'Arquivo recebido com sucesso.';
@@ -663,21 +497,19 @@
 
     // UI transitions
     function showProcessing(){
-      uploadScreen.style.display = 'none';
+      document.getElementById('uploadScreen').style.display = 'none';
       filesList.style.display = 'none';
       processingScreen.style.display = 'block';
       resultsScreen.style.display = 'none';
     }
-
     function showResults(){
-      uploadScreen.style.display = 'none';
+      document.getElementById('uploadScreen').style.display = 'none';
       processingScreen.style.display = 'none';
       resultsScreen.style.display = 'block';
       renderResults();
     }
-
     function showUpload(){
-      uploadScreen.style.display = 'block';
+      document.getElementById('uploadScreen').style.display = 'block';
       processingScreen.style.display = 'none';
       resultsScreen.style.display = 'none';
     }
@@ -702,7 +534,7 @@
 
         const thumb = document.createElement('div');
         thumb.className = 'result-thumb';
-        thumb.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+        thumb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
         const details = document.createElement('div');
         details.style.minWidth = '0';
@@ -728,17 +560,15 @@
         dl.className = 'btn';
         dl.href = f.url;
         dl.download = f.name;
-        dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>Download';
+        dl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg><span class="btn-label">Download</span>';
         dl.target = '_blank';
         actions.appendChild(dl);
 
         const open = document.createElement('button');
         open.className = 'btn ghost';
         open.type = 'button';
-        open.textContent = 'Abrir';
-        open.addEventListener('click', () => {
-          window.open(f.url, '_blank');
-        });
+        open.innerHTML = '<span class="btn-label">Abrir</span>';
+        open.addEventListener('click', () => { window.open(f.url, '_blank'); });
         actions.appendChild(open);
 
         item.appendChild(meta);
