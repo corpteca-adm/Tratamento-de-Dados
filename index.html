@@ -227,7 +227,7 @@
         </div>
       </section>
 
-      <!-- Processing Screen (sem botão de cancelar) -->
+      <!-- Processing Screen -->
       <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="processing">
           <div class="spinner" role="status" aria-hidden="true"></div>
@@ -449,15 +449,24 @@
         const blob = await resp.blob();
         const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
         
-        // Extrai o nome do arquivo do header Content-Disposition
-        let fileName = 'arquivo_processado.xlsx';
+        // Extrai o nome do arquivo exatamente como vem do N8N (sem renomear)
+        let fileName = null;
         const cd = resp.headers.get('content-disposition');
+        
         if (cd){
           // tenta extrair filename do Content-Disposition (RFC 6266 / RFC 2183)
-          const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
-          if (m && m[1]){
-            fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
+          // suporta: filename="name"; filename*=UTF-8''name; etc
+          const match = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"'\n]+)/i);
+          if (match && match[1]){
+            fileName = decodeURIComponent(match[1].trim());
           }
+        }
+
+        // Se não conseguir extrair ou estiver vazio, usa o blob
+        // Sem fallback — mostra exatamente o que N8N enviou
+        if (!fileName){
+          console.warn('Content-Disposition header não encontrado ou inválido. Usando nome vazio.');
+          fileName = '';
         }
 
         const url = URL.createObjectURL(blob);
@@ -523,7 +532,7 @@
         const name = document.createElement('div');
         name.className = 'result-name';
         name.title = f.name;
-        name.textContent = f.name;
+        name.textContent = f.name || '(sem nome)'; // mostra "(sem nome)" se o nome estiver vazio
         const size = document.createElement('div');
         size.className = 'result-size';
         size.textContent = formatBytes(f.size);
@@ -546,7 +555,10 @@
         dlBtn.addEventListener('click', () => {
           const a = document.createElement('a');
           a.href = f.url;
-          a.download = f.name;
+          // Se o nome está vazio, deixa o browser decidir o nome padrão
+          if (f.name) {
+            a.download = f.name;
+          }
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
