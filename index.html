@@ -6,7 +6,7 @@
   <title>Tratamento de Dados — Upload</title>
 
   <style>
-    /* ====== Design tokens (corporate, clean) ====== */
+    /* ====== Design tokens (corporate, clean) ======= */
     :root{
       --bg:#f4f6f8;
       --surface:#ffffff;
@@ -227,7 +227,7 @@
         </div>
       </section>
 
-      <!-- Processing Screen (sem botão de cancelar) -->
+      <!-- Processing Screen -->
       <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="processing">
           <div class="spinner" role="status" aria-hidden="true"></div>
@@ -242,7 +242,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <h2 id="resultsTitle" style="margin:0">Processamento concluído</h2>
-              <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivos retornados pelo serviço</div>
+              <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivo retornado pelo serviço</div>
             </div>
             <div>
               <button id="btnNew" class="btn primary" type="button">
@@ -263,8 +263,8 @@
   <script>
     const MAX_FILES = 8;
     let selectedFiles = [];
-    let processedFiles = [];
-    let objectUrls = [];
+    let processedFile = null;
+    let objectUrl = null;
 
     // Elements
     const uploadArea = document.getElementById('uploadArea');
@@ -288,7 +288,6 @@
     const resultsSubtitle = document.getElementById('resultsSubtitle');
     const btnNew = document.getElementById('btnNew');
 
-    // Prevent double dialog when clicking label inside uploadArea
     btnChoose.addEventListener('click', (e) => {
       e.stopPropagation();
     });
@@ -298,7 +297,6 @@
       fileInput.click();
     });
 
-    // Drag & drop
     uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('hover'); });
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
     uploadArea.addEventListener('drop', (e) => {
@@ -308,7 +306,6 @@
       handleIncomingFiles(files);
     });
 
-    // File selection
     fileInput.addEventListener('change', (e) => {
       handleIncomingFiles(Array.from(e.target.files || []));
       fileInput.value = '';
@@ -316,7 +313,6 @@
 
     btnAddMore.addEventListener('click', () => fileInput.click());
 
-    // Clear button
     let clearGuard = false;
     btnClear.addEventListener('click', () => {
       if (clearGuard) return;
@@ -336,7 +332,7 @@
     btnNew.addEventListener('click', () => {
       cleanupProcessed();
       selectedFiles = [];
-      processedFiles = [];
+      processedFile = null;
       showUpload();
       renderFilesList();
     });
@@ -428,41 +424,6 @@
       return (bytes / Math.pow(k, i)).toFixed(i ? 2 : 0) + ' ' + sizes[i];
     }
 
-    // ==================== FUNÇÃO MELHORADA ====================
-    /**
-     * Extrai o nome do arquivo do header Content-Disposition
-     * Suporta RFC 5987 (filename*=UTF-8'...) e RFC 2183/2616 (filename=...)
-     */
-    function extractFileNameFromDisposition(cd) {
-      if (!cd) return null;
-      
-      // Tenta RFC 5987: filename*=UTF-8''encoded-name
-      let match = cd.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
-      if (match && match[1]) {
-        let filename = match[1].trim();
-        // Remove aspas se houver
-        filename = filename.replace(/^["']|["']$/g, '');
-        // Se foi encoded em UTF-8, decodifica
-        try {
-          filename = decodeURIComponent(filename);
-        } catch (e) {
-          // Se falhar na decodificação, usa como está
-        }
-        return filename;
-      }
-      
-      // Tenta RFC 2183/2616 padrão: filename="name" ou filename=name
-      match = cd.match(/filename=([^;]+)/i);
-      if (match && match[1]) {
-        let filename = match[1].trim();
-        // Remove aspas
-        filename = filename.replace(/^["']|["']$/g, '');
-        return filename;
-      }
-      
-      return null;
-    }
-
     async function startProcessing(){
       showProcessing();
       processingTitle.textContent = 'Enviando arquivos para processamento';
@@ -482,28 +443,23 @@
         }
 
         const blob = await resp.blob();
-        const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
         
-        // ========== EXTRAI O NOME CORRETO DO ARQUIVO ==========
-        let fileName = 'arquivo_processado.zip'; // fallback padrão
-        const cd = resp.headers.get('content-disposition');
-        
-        if (cd) {
-          const extracted = extractFileNameFromDisposition(cd);
-          if (extracted) {
-            fileName = extracted;
-            console.log('Nome do arquivo extraído:', fileName);
-          }
-        } else {
-          console.warn('Header Content-Disposition não encontrado na resposta');
-        }
-
+        // ✅ SIMPLES: Apenas recebe o blob como é
         const url = URL.createObjectURL(blob);
-        objectUrls.push(url);
-        processedFiles = [{ name: fileName, size: blob.size, type: contentType, url, blob }];
+        objectUrl = url;
+        
+        // Usa o nome padrão que o n8n enviou (via Content-Disposition automático do navegador)
+        // Se quiser forçar um nome, pode colocar aqui
+        const fileName = 'arquivo_processado'; // O navegador vai adicionar a extensão correta
+        
+        processedFile = { 
+          url, 
+          blob,
+          fileName 
+        };
 
         processingTitle.textContent = 'Concluído';
-        processingSubtitle.textContent = 'Arquivo(s) recebido(s) com sucesso.';
+        processingSubtitle.textContent = 'Arquivo recebido com sucesso.';
         setTimeout(() => showResults(), 450);
 
       } catch (err){
@@ -515,19 +471,20 @@
       }
     }
 
-    // UI transitions
     function showProcessing(){
       document.getElementById('uploadScreen').style.display = 'none';
       filesList.style.display = 'none';
       processingScreen.style.display = 'block';
       resultsScreen.style.display = 'none';
     }
+
     function showResults(){
       document.getElementById('uploadScreen').style.display = 'none';
       processingScreen.style.display = 'none';
       resultsScreen.style.display = 'block';
       renderResults();
     }
+
     function showUpload(){
       document.getElementById('uploadScreen').style.display = 'block';
       processingScreen.style.display = 'none';
@@ -536,76 +493,75 @@
 
     function renderResults(){
       resultsGrid.innerHTML = '';
-      if (!processedFiles.length){
+      
+      if (!processedFile){
         resultsTitle.textContent = 'Nenhum arquivo retornado';
         resultsSubtitle.textContent = 'Não foram encontrados arquivos após o processamento.';
         return;
       }
 
       resultsTitle.textContent = 'Processamento concluído';
-      resultsSubtitle.textContent = `${processedFiles.length} arquivo(s) disponível(is) para download`;
+      resultsSubtitle.textContent = 'Arquivo disponível para download';
 
-      processedFiles.forEach((f) => {
-        const item = document.createElement('div');
-        item.className = 'result-item';
+      const item = document.createElement('div');
+      item.className = 'result-item';
 
-        const meta = document.createElement('div');
-        meta.className = 'result-meta';
+      const meta = document.createElement('div');
+      meta.className = 'result-meta';
 
-        const thumb = document.createElement('div');
-        thumb.className = 'result-thumb';
-        thumb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+      const thumb = document.createElement('div');
+      thumb.className = 'result-thumb';
+      thumb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
-        const details = document.createElement('div');
-        details.style.minWidth = '0';
-        const name = document.createElement('div');
-        name.className = 'result-name';
-        name.title = f.name;
-        name.textContent = f.name;
-        const size = document.createElement('div');
-        size.className = 'result-size';
-        size.textContent = formatBytes(f.size);
+      const details = document.createElement('div');
+      details.style.minWidth = '0';
+      const name = document.createElement('div');
+      name.className = 'result-name';
+      name.title = processedFile.fileName;
+      name.textContent = processedFile.fileName;
+      const size = document.createElement('div');
+      size.className = 'result-size';
+      size.textContent = formatBytes(processedFile.blob.size);
 
-        details.appendChild(name);
-        details.appendChild(size);
+      details.appendChild(name);
+      details.appendChild(size);
 
-        meta.appendChild(thumb);
-        meta.appendChild(details);
+      meta.appendChild(thumb);
+      meta.appendChild(details);
 
-        const actions = document.createElement('div');
-        actions.style.display = 'flex';
-        actions.style.gap = '8px';
+      const actions = document.createElement('div');
+      actions.style.display = 'flex';
+      actions.style.gap = '8px';
 
-        // Botão Download (button, não link)
-        const dlBtn = document.createElement('button');
-        dlBtn.className = 'btn primary';
-        dlBtn.type = 'button';
-        dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="btn-label">Download</span>';
-        dlBtn.addEventListener('click', () => {
-          const a = document.createElement('a');
-          a.href = f.url;
-          a.download = f.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        });
-        actions.appendChild(dlBtn);
-
-        item.appendChild(meta);
-        item.appendChild(actions);
-
-        resultsGrid.appendChild(item);
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'btn primary';
+      dlBtn.type = 'button';
+      dlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg><span class="btn-label">Download</span>';
+      dlBtn.addEventListener('click', () => {
+        const a = document.createElement('a');
+        a.href = processedFile.url;
+        a.download = processedFile.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       });
+      actions.appendChild(dlBtn);
+
+      item.appendChild(meta);
+      item.appendChild(actions);
+
+      resultsGrid.appendChild(item);
     }
 
     function cleanupProcessed(){
-      objectUrls.forEach(u => URL.revokeObjectURL(u));
-      objectUrls = [];
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+      }
     }
 
     window.addEventListener('beforeunload', () => cleanupProcessed());
 
-    // initial state
     renderFilesList();
   </script>
 </body>
