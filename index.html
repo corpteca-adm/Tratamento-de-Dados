@@ -121,7 +121,6 @@
       transition:all .16s ease;
       cursor:pointer;
     }
-    .upload-area:focus,
     .upload-area.hover{ box-shadow:0 6px 18px rgba(11,95,255,0.06); border-color:var(--primary); transform:translateY(-2px) }
     .upload-icon{
       width:64px;
@@ -150,6 +149,7 @@
       justify-content:flex-end;
     }
 
+    /* Buttons - subtle interactive */
     .btn{
       padding:10px 14px;
       border-radius:8px;
@@ -158,9 +158,14 @@
       cursor:pointer;
       font-weight:600;
       display:inline-flex;
-      gap:10px;
+      gap:8px;
       align-items:center;
+      transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, opacity .12s ease;
     }
+    .btn:focus{ outline:3px solid rgba(11,95,255,0.12); outline-offset:2px }
+    .btn:hover{ transform:translateY(-3px); box-shadow:0 10px 18px rgba(12,20,36,0.06) }
+    .btn:active{ transform:translateY(-1px) scale(.995); opacity:.98 }
+
     .btn.primary{
       background:var(--primary);
       color:white;
@@ -172,7 +177,7 @@
       color:var(--text);
       border:1px solid var(--border);
     }
-    .btn:disabled{ opacity:0.6; cursor:not-allowed }
+    .btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none }
 
     /* files list */
     .files-list{ margin-top:18px }
@@ -190,7 +195,9 @@
       gap:12px;
       align-items:center;
       border:1px solid var(--border);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
     }
+    .file-card:hover{ transform:translateY(-4px); box-shadow:0 8px 20px rgba(12,20,36,0.05); border-color:rgba(11,95,255,0.06) }
     .file-thumb{
       width:44px;
       height:44px;
@@ -217,11 +224,10 @@
       border:1px solid transparent;
       background:transparent;
       cursor:pointer;
+      transition:transform .12s ease, background-color .12s ease, border-color .12s ease;
     }
-    .icon-btn.danger{
-      border-color:rgba(239,68,68,0.08);
-      color:var(--danger)
-    }
+    .icon-btn:hover{ background:rgba(11,95,255,0.04); transform:translateY(-2px) }
+    .icon-btn.danger{ border-color:rgba(239,68,68,0.08); color:var(--danger) }
 
     /* ===== Processing ===== */
     .processing{
@@ -270,14 +276,21 @@
       .files-grid,.results-grid{ grid-template-columns:1fr }
       .controls{ flex-direction:column; align-items:stretch }
     }
+
+    /* visually hidden but focusable input label approach */
+    .visually-hidden{
+      position:absolute !important;
+      height:1px; width:1px;
+      overflow:hidden; clip:rect(1px, 1px, 1px, 1px);
+      white-space:nowrap; border:0; padding:0; margin:-1px;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header class="appbar" role="banner">
-      <div class="brand" aria-hidden="false">
+      <div class="brand">
         <div class="brand-logo" aria-hidden="true">
-          <!-- subtle document icon -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M14 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V9l-6-6z" fill="white"/>
             <path d="M14 3v6h6" fill="rgba(255,255,255,0.14)"/>
@@ -291,7 +304,7 @@
     </header>
 
     <main class="card" role="main" aria-live="polite">
-      <!-- ===== Upload Screen ===== -->
+      <!-- Upload Screen -->
       <section id="uploadScreen">
         <div class="card-header">
           <div>
@@ -306,7 +319,6 @@
         <div class="card-body">
           <div id="uploadArea" class="upload-area" tabindex="0" role="button" aria-label="Clique ou arraste arquivos para enviar">
             <div class="upload-icon" aria-hidden="true">
-              <!-- upload cloud icon -->
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
                 <path d="M16 16l-4-4-4 4" />
                 <path d="M12 12v8" />
@@ -321,19 +333,20 @@
             </div>
 
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-              <button id="btnChoose" class="btn ghost" type="button" title="Selecionar arquivos">
-                <!-- folder plus icon -->
+              <!-- label for file input to avoid programmatic double-click issues -->
+              <label id="btnChoose" class="btn ghost" for="fileInput" title="Selecionar arquivos" role="button">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2z"/>
                   <path d="M12 11v6M9 14h6"/>
                 </svg>
                 Selecionar
-              </button>
-              <div style="font-size:0.85rem;color:var(--muted)">Nenhum envio ainda</div>
+              </label>
+              <div id="uploadHint" style="font-size:0.85rem;color:var(--muted)">Nenhum envio ainda</div>
             </div>
           </div>
 
-          <input id="fileInput" type="file" accept=".xlsx,.xls" multiple style="display:none" />
+          <!-- hidden but accessible input -->
+          <input id="fileInput" class="visually-hidden" type="file" accept=".xlsx,.xls" multiple aria-hidden="false" />
 
           <div id="filesList" class="files-list" aria-live="polite" style="display:none">
             <div style="display:flex;align-items:center;justify-content:space-between">
@@ -342,7 +355,7 @@
                 <button id="btnClear" class="btn" type="button" title="Limpar seleção">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
                     <path d="M3 6h18" />
-                    <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+                    <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
                     <path d="M10 11v6M14 11v6" />
                   </svg>
                   Limpar
@@ -374,7 +387,7 @@
         </div>
       </section>
 
-      <!-- ===== Processing Screen ===== -->
+      <!-- Processing Screen -->
       <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="processing">
           <div class="spinner" role="status" aria-hidden="true"></div>
@@ -386,7 +399,7 @@
         </div>
       </section>
 
-      <!-- ===== Results Screen ===== -->
+      <!-- Results Screen -->
       <section id="resultsScreen" style="display:none; border-top:1px solid var(--border)">
         <div class="results">
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -407,26 +420,26 @@
 
   <script>
     /*
-      Versão repaginada e mais robusta do frontend:
-      - UI corporativa, sem emojis (apenas ícones SVG).
-      - Fluxo: upload -> processing -> results.
-      - Ao receber blob do n8n, cria URL para download e exibe botão.
-      - Melhor manipulação do DOM sem atributos inline (onclick).
-      - Limpeza de object URLs no reinício.
+      Melhorias implementadas:
+      - Corrigi o "bug" do botão Selecionar (evitava duplo trigger) usando <label for="fileInput"> e evitando que o clique no botão dispare também o click do uploadArea.
+      - Adicionei animações sutis nos botões e cards (hover/active) para feedback visual ao passar/pressionar.
+      - Removi handlers inline; usei listeners e elementos <button>/<label> corretos (type="button") para evitar comportamento inesperado.
+      - Corrigi comportamento de seleção de arquivos: agora a primeira seleção já registra os arquivos; limpo fileInput apenas após processar as entradas.
+      - Ícones do botão 'remover' padronizados e sem problema de renderização.
+      - Ao receber o blob do n8n, cria URL de download (download + abrir em nova aba).
     */
 
     const MAX_FILES = 8;
     let selectedFiles = [];
-    let processedFiles = []; // { name, size, type, url, blob }
+    let processedFiles = [];
     let objectUrls = [];
 
-    // Elementos
+    // Elements
     const uploadScreen = document.getElementById('uploadScreen');
     const processingScreen = document.getElementById('processingScreen');
     const resultsScreen = document.getElementById('resultsScreen');
 
     const uploadArea = document.getElementById('uploadArea');
-    const btnChoose = document.getElementById('btnChoose');
     const fileInput = document.getElementById('fileInput');
     const filesList = document.getElementById('filesList');
     const filesGrid = document.getElementById('filesGrid');
@@ -434,6 +447,7 @@
     const btnProcess = document.getElementById('btnProcess');
     const btnAddMore = document.getElementById('btnAddMore');
     const btnClear = document.getElementById('btnClear');
+    const uploadHint = document.getElementById('uploadHint');
 
     const processingTitle = document.getElementById('processingTitle');
     const processingSubtitle = document.getElementById('processingSubtitle');
@@ -444,12 +458,15 @@
     const resultsSubtitle = document.getElementById('resultsSubtitle');
     const btnNew = document.getElementById('btnNew');
 
-    // Accessibility: clicking upload area triggers file input
-    uploadArea.addEventListener('click', () => fileInput.click());
-    btnChoose.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+    // Prevent double file dialog when clicking label inside uploadArea:
+    uploadArea.addEventListener('click', (e) => {
+      // if click target is inside the "Selecionar" label/button, do nothing here
+      if (e.target.closest('#btnChoose')) return;
+      // otherwise open file picker
+      fileInput.click();
+    });
 
-    // Drag & drop
+    // drag & drop
     uploadArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       uploadArea.classList.add('hover');
@@ -462,12 +479,16 @@
       handleIncomingFiles(files);
     });
 
+    // file selection
     fileInput.addEventListener('change', (e) => {
-      handleIncomingFiles(Array.from(e.target.files));
+      handleIncomingFiles(Array.from(e.target.files || []));
+      // keep fileInput.value so user can re-select same filename only AFTER we've processed it;
+      // clear value to allow selecting same file name in the future
       fileInput.value = '';
     });
 
     btnAddMore.addEventListener('click', () => fileInput.click());
+
     btnClear.addEventListener('click', () => {
       if (!selectedFiles.length) return;
       if (confirm('Deseja remover todos os arquivos selecionados?')) {
@@ -482,10 +503,7 @@
     });
 
     btnCancelProcessing.addEventListener('click', () => {
-      // Permite voltar ao upload durante processamento
       if (confirm('Deseja cancelar o processamento e voltar para a tela de upload?')) {
-        // Observação: se a requisição estiver em andamento, não há garantia de cancelamento sem AbortController.
-        // Aqui apenas voltamos à tela inicial e mantemos o upload para novo envio.
         showUpload();
       }
     });
@@ -498,9 +516,7 @@
       renderFilesList();
     });
 
-    // ===== helpers =====
     function handleIncomingFiles(files){
-      // filtra extensões xlsx/xls
       const valid = files.filter(f => {
         const n = f.name.toLowerCase();
         return n.endsWith('.xlsx') || n.endsWith('.xls');
@@ -523,6 +539,7 @@
 
     function renderFilesList(){
       counterBadge.textContent = `${selectedFiles.length} / ${MAX_FILES}`;
+      uploadHint.textContent = selectedFiles.length ? `${selectedFiles.length} arquivo(s) selecionado(s)` : 'Nenhum envio ainda';
 
       if (!selectedFiles.length){
         filesList.style.display = 'none';
@@ -535,7 +552,6 @@
       btnProcess.disabled = false;
       btnAddMore.style.display = selectedFiles.length < MAX_FILES ? 'inline-flex' : 'none';
 
-      // clear grid and rebuild
       filesGrid.innerHTML = '';
       selectedFiles.forEach((file, idx) => {
         const card = document.createElement('div');
@@ -564,7 +580,7 @@
         btnRemove.type = 'button';
         btnRemove.title = 'Remover arquivo';
         btnRemove.className = 'icon-btn danger';
-        btnRemove.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger)"><path d="M3 6h18"/><path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6"/></svg>';
+        btnRemove.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger)"><path d="M6 18L18 6M6 6l12 12"/></svg>';
         btnRemove.addEventListener('click', () => {
           selectedFiles.splice(idx, 1);
           renderFilesList();
@@ -587,17 +603,14 @@
       return (bytes / Math.pow(k, i)).toFixed(i ? 2 : 0) + ' ' + sizes[i];
     }
 
-    // ===== processing =====
     async function startProcessing(){
       showProcessing();
       processingTitle.textContent = 'Enviando arquivos para processamento';
       processingSubtitle.textContent = 'Aguarde — enviando os arquivos para o serviço.';
 
-      // montar FormData
       const fd = new FormData();
       selectedFiles.forEach((f, i) => fd.append(`file${i+1}`, f));
 
-      // Endpoint (substitua pela sua URL real)
       const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook/processar-8-arquivos';
 
       try {
@@ -611,23 +624,20 @@
           throw new Error(text || `Resposta do servidor: ${resp.status}`);
         }
 
-        // recebe blob
         const blob = await resp.blob();
         const contentType = resp.headers.get('content-type') || blob.type || 'application/octet-stream';
         let fileName = 'arquivo_processado';
-        // tenta obter filename do content-disposition
+
         const cd = resp.headers.get('content-disposition');
         if (cd){
           const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
           if (m && m[1]) fileName = decodeURIComponent(m[1].replace(/(^"|"$)/g, ''));
         } else {
-          // fallback para extensão baseada no tipo
           if (contentType.includes('zip')) fileName = `processados_${new Date().toISOString().slice(0,10)}.zip`;
           else if (contentType.includes('spreadsheet') || contentType.includes('excel') || /\.xlsx?$/i.test(selectedFiles[0]?.name || '')) fileName = 'arquivo_processado.xlsx';
           else fileName = `arquivo_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
         }
 
-        // cria URL para download e guarda info
         const url = URL.createObjectURL(blob);
         objectUrls.push(url);
         processedFiles = [{
@@ -638,23 +648,20 @@
           blob
         }];
 
-        // mostra resultados
         processingTitle.textContent = 'Concluído';
         processingSubtitle.textContent = 'Arquivo recebido com sucesso.';
-        // pequena pausa para transição visual
-        setTimeout(() => showResults(), 500);
+        setTimeout(() => showResults(), 450);
 
       } catch (err){
         console.error('Erro no envio/recebimento:', err);
         processingTitle.textContent = 'Erro';
         processingSubtitle.textContent = 'Ocorreu um erro no processamento.';
         alert('Erro ao processar: ' + (err.message || err));
-        // volta para upload para permitir nova tentativa
         showUpload();
       }
     }
 
-    // ===== UI transitions =====
+    // UI transitions
     function showProcessing(){
       uploadScreen.style.display = 'none';
       filesList.style.display = 'none';
@@ -675,7 +682,6 @@
       resultsScreen.style.display = 'none';
     }
 
-    // ===== render results =====
     function renderResults(){
       resultsGrid.innerHTML = '';
       if (!processedFiles.length){
@@ -687,7 +693,7 @@
       resultsTitle.textContent = 'Processamento concluído';
       resultsSubtitle.textContent = `${processedFiles.length} arquivo(s) disponível(is) para download`;
 
-      processedFiles.forEach((f, idx) => {
+      processedFiles.forEach((f) => {
         const item = document.createElement('div');
         item.className = 'result-item';
 
@@ -723,7 +729,6 @@
         dl.href = f.url;
         dl.download = f.name;
         dl.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v12"/></svg>Download';
-        // abrir em nova aba também
         dl.target = '_blank';
         actions.appendChild(dl);
 
@@ -732,7 +737,6 @@
         open.type = 'button';
         open.textContent = 'Abrir';
         open.addEventListener('click', () => {
-          // abrir o blob em nova aba
           window.open(f.url, '_blank');
         });
         actions.appendChild(open);
@@ -745,21 +749,14 @@
     }
 
     function cleanupProcessed(){
-      // revoga object URLs criados
       objectUrls.forEach(u => URL.revokeObjectURL(u));
       objectUrls = [];
     }
 
-    // Limpeza quando usuário fecha / inicia novo envio
     window.addEventListener('beforeunload', () => cleanupProcessed());
 
-    // Inicializa estado
+    // initial state
     renderFilesList();
-
-    // Observação: você pode substituir o fetch direto por uma lógica que faça polling
-    // caso o n8n aceite apenas responder async e disponibilizar arquivos posteriormente.
-    // Aqui assumimos resposta direta com blob.
-
   </script>
 </body>
 </html>
