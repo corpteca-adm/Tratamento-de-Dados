@@ -59,6 +59,26 @@
 
     .card-body{ padding:26px; }
 
+    /* ===== SELETOR DE TIPO =====  */
+    .type-selector{ 
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;
+    }
+    .type-option{
+      position:relative;
+    }
+    .type-option input{ position:absolute; opacity:0; cursor:pointer; }
+    .type-label{
+      display:flex; align-items:center; gap:12px; padding:16px; border-radius:10px; border:2px solid var(--border);
+      background:var(--surface); cursor:pointer; transition:all .2s ease;
+    }
+    .type-option input:checked + .type-label{
+      border-color:var(--primary); background:rgba(11,95,255,0.04); box-shadow:0 4px 12px rgba(11,95,255,0.1);
+    }
+    .type-radio{ width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; transition:all .2s ease; }
+    .type-option input:checked + .type-label .type-radio{ border-color:var(--primary); background:var(--primary); }
+    .type-info h3{ margin:0; font-weight:600; font-size:0.95rem; }
+    .type-info p{ margin:4px 0 0; color:var(--muted); font-size:0.85rem; }
+
     .upload-area{
       border-radius:12px; border:1px dashed var(--border); padding:30px; display:flex; gap:20px; align-items:center;
       background:var(--glass); transition:all .16s ease; cursor:pointer; position:relative;
@@ -148,8 +168,48 @@
     </header>
 
     <main class="card" role="main" aria-live="polite">
+      <!-- Type Selection Screen -->
+      <section id="typeScreen">
+        <div class="card-header">
+          <div>
+            <h1>Selecione o tipo de relatório</h1>
+            <p>Escolha qual tipo de processamento deseja realizar</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="type-selector">
+            <div class="type-option">
+              <input type="radio" id="type-recebido" name="reportType" value="recebido" checked>
+              <label for="type-recebido" class="type-label">
+                <div class="type-radio"></div>
+                <div class="type-info">
+                  <h3>Internação - Recebido</h3>
+                  <p>Processamento de recebimentos</p>
+                </div>
+              </label>
+            </div>
+            <div class="type-option">
+              <input type="radio" id="type-entrega" name="reportType" value="entrega">
+              <label for="type-entrega" class="type-label">
+                <div class="type-radio"></div>
+                <div class="type-info">
+                  <h3>Internação - Entrega</h3>
+                  <p>Processamento de entregas</p>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="controls">
+            <button id="btnContinue" class="btn primary">
+              <span class="btn-label">Continuar</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- Upload Screen -->
-      <section id="uploadScreen">
+      <section id="uploadScreen" style="display:none">
         <div class="card-header">
           <div>
             <h1>Carregar arquivos</h1>
@@ -176,202 +236,144 @@
 
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
               <label id="btnChoose" class="btn ghost" for="fileInput" title="Selecionar arquivos" role="button" aria-label="Selecionar arquivos">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2z"/>
-                  <path d="M12 11v6M9 14h6"/>
-                </svg>
-                <span class="btn-label">Selecionar</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                <span class="btn-label">Selecionar arquivos</span>
               </label>
-              <div id="uploadHint" style="font-size:0.85rem;color:var(--muted)">Nenhum envio ainda</div>
+              <input id="fileInput" type="file" multiple accept=".xlsx,.xls" class="visually-hidden">
             </div>
           </div>
 
-          <input id="fileInput" class="visually-hidden" type="file" accept=".xlsx,.xls" multiple aria-hidden="false" />
-
-          <div id="filesList" class="files-list" aria-live="polite" style="display:none">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="color:var(--muted); font-weight:600">Arquivos prontos</div>
-              <div style="display:flex; gap:8px; align-items:center">
-                <button id="btnClear" class="btn ghost" type="button" title="Limpar seleção" aria-label="Limpar todos os arquivos">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
-                    <path d="M3 6h18" />
-                    <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
-                    <path d="M10 11v6M14 11v6" />
-                  </svg>
-                  <span class="btn-label">Limpar</span>
-                </button>
-
-                <button id="btnAddMore" class="btn" type="button" title="Adicionar mais" style="display:none">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  <span class="btn-label">Adicionar</span>
-                </button>
-              </div>
+          <div id="filesList" class="files-list" style="display:none">
+            <div style="margin-bottom:12px; color:var(--muted); font-size:0.9rem">
+              <span id="filesCount"></span>
             </div>
+            <div id="filesGrid" class="files-grid"></div>
+          </div>
 
-            <div id="filesGrid" class="files-grid" style="margin-top:12px"></div>
-
-            <div class="controls" style="margin-top:18px">
-              <div style="flex:1"></div>
-              <button id="btnProcess" class="btn primary" disabled type="button" title="Enviar para processamento">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <path d="M7 10l5-5 5 5" />
-                  <path d="M12 5v12" />
-                </svg>
-                <span class="btn-label">Processar</span>
-              </button>
-            </div>
+          <div class="controls">
+            <button id="btnCancel" class="btn ghost" type="button">
+              <span class="btn-label">Voltar</span>
+            </button>
+            <button id="btnProcess" class="btn primary" type="button" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+              <span class="btn-label">Enviar para processamento</span>
+            </button>
           </div>
         </div>
       </section>
 
       <!-- Processing Screen -->
-      <section id="processingScreen" style="display:none; border-top:1px solid var(--border)">
+      <section id="processingScreen" style="display:none">
         <div class="processing">
-          <div class="spinner" role="status" aria-hidden="true"></div>
-          <h3 id="processingTitle">Processando arquivos</h3>
-          <p id="processingSubtitle">Enviando para o serviço. Aguarde...</p>
+          <div class="spinner" aria-hidden="true"></div>
+          <h3 id="processingTitle">Processando</h3>
+          <p id="processingSubtitle">Aguarde...</p>
         </div>
       </section>
 
       <!-- Results Screen -->
-      <section id="resultsScreen" style="display:none; border-top:1px solid var(--border)">
-        <div class="results">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <h2 id="resultsTitle" style="margin:0">Processamento concluído</h2>
-              <div id="resultsSubtitle" style="color:var(--muted); margin-top:6px">Arquivo retornado pelo serviço</div>
-            </div>
-            <div>
-              <button id="btnNew" class="btn primary" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color:inherit">
-                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-                <span class="btn-label">Novo envio</span>
-              </button>
-            </div>
+      <section id="resultsScreen" style="display:none">
+        <div class="card-header">
+          <div>
+            <h1 id="resultsTitle">Resultados</h1>
+            <p id="resultsSubtitle"></p>
           </div>
-
+        </div>
+        <div class="results">
           <div id="resultsGrid" class="results-grid"></div>
+          <div style="margin-top:18px; display:flex; gap:8px">
+            <button id="btnNewUpload" class="btn ghost" type="button">
+              <span class="btn-label">Novo envio</span>
+            </button>
+          </div>
         </div>
       </section>
     </main>
   </div>
 
   <script>
-    const MAX_FILES = 8;
-    let selectedFiles = [];
-    let processedFile = null;
-    let objectUrl = null;
-
-    // Elements
-    const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
     const filesList = document.getElementById('filesList');
     const filesGrid = document.getElementById('filesGrid');
+    const filesCount = document.getElementById('filesCount');
     const counterBadge = document.getElementById('counterBadge');
     const btnProcess = document.getElementById('btnProcess');
-    const btnAddMore = document.getElementById('btnAddMore');
-    const btnClear = document.getElementById('btnClear');
-    const uploadHint = document.getElementById('uploadHint');
+    const btnCancel = document.getElementById('btnCancel');
+    const btnNewUpload = document.getElementById('btnNewUpload');
+    const btnContinue = document.getElementById('btnContinue');
     const btnChoose = document.getElementById('btnChoose');
-
     const processingScreen = document.getElementById('processingScreen');
     const processingTitle = document.getElementById('processingTitle');
     const processingSubtitle = document.getElementById('processingSubtitle');
-
     const resultsScreen = document.getElementById('resultsScreen');
-    const resultsGrid = document.getElementById('resultsGrid');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsSubtitle = document.getElementById('resultsSubtitle');
-    const btnNew = document.getElementById('btnNew');
+    const resultsGrid = document.getElementById('resultsGrid');
+    const typeScreen = document.getElementById('typeScreen');
+    const uploadScreen = document.getElementById('uploadScreen');
 
-    btnChoose.addEventListener('click', (e) => {
-      e.stopPropagation();
+    let selectedFiles = [];
+    let processedFile = null;
+    let objectUrl = null;
+    let selectedReportType = 'recebido';
+
+    const webhookURLs = {
+      recebido: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/internação-recebimento',
+      entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/internação-entrega'
+    };
+
+    // Type selection
+    btnContinue.addEventListener('click', () => {
+      selectedReportType = document.querySelector('input[name="reportType"]:checked').value;
+      showUpload();
     });
 
-    uploadArea.addEventListener('click', (e) => {
-      if (e.target.closest && e.target.closest('#btnChoose')) return;
-      fileInput.click();
+    // Upload events
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files).slice(0, 8 - selectedFiles.length);
+      selectedFiles = [...selectedFiles, ...files];
+      renderFilesList();
     });
 
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('hover'); });
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('hover');
+    });
+
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('hover'));
+
     uploadArea.addEventListener('drop', (e) => {
       e.preventDefault();
       uploadArea.classList.remove('hover');
-      const files = Array.from(e.dataTransfer.files || []);
-      handleIncomingFiles(files);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-      handleIncomingFiles(Array.from(e.target.files || []));
-      fileInput.value = '';
-    });
-
-    btnAddMore.addEventListener('click', () => fileInput.click());
-
-    let clearGuard = false;
-    btnClear.addEventListener('click', () => {
-      if (clearGuard) return;
-      if (!selectedFiles.length) return;
-      if (!confirm('Deseja remover todos os arquivos selecionados?')) return;
-      clearGuard = true;
-      setTimeout(() => clearGuard = false, 600);
-      selectedFiles = [];
+      const files = Array.from(e.dataTransfer.files).slice(0, 8 - selectedFiles.length);
+      selectedFiles = [...selectedFiles, ...files];
       renderFilesList();
     });
 
-    btnProcess.addEventListener('click', () => {
-      if (!selectedFiles.length) return;
-      startProcessing();
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    btnCancel.addEventListener('click', () => {
+      selectedFiles = [];
+      renderFilesList();
+      showTypeSelection();
     });
 
-    btnNew.addEventListener('click', () => {
-      cleanupProcessed();
+    btnProcess.addEventListener('click', startProcessing);
+
+    btnNewUpload.addEventListener('click', () => {
       selectedFiles = [];
       processedFile = null;
-      showUpload();
       renderFilesList();
+      showTypeSelection();
     });
 
-    function handleIncomingFiles(files){
-      const valid = files.filter(f => {
-        const n = f.name.toLowerCase();
-        return n.endsWith('.xlsx') || n.endsWith('.xls');
-      });
-
-      if (!valid.length){
-        alert('Apenas arquivos .xlsx ou .xls são aceitos.');
-        return;
-      }
-
-      const remaining = MAX_FILES - selectedFiles.length;
-      const toAdd = valid.slice(0, remaining);
-      selectedFiles = selectedFiles.concat(toAdd);
-
-      if (valid.length > toAdd.length){
-        alert(`Atenção: máximo ${MAX_FILES} arquivos. ${valid.length - toAdd.length} arquivo(s) não foram adicionados.`);
-      }
-      renderFilesList();
-    }
-
     function renderFilesList(){
-      counterBadge.textContent = `${selectedFiles.length} / ${MAX_FILES}`;
-      uploadHint.textContent = selectedFiles.length ? `${selectedFiles.length} arquivo(s) selecionado(s)` : 'Nenhum envio ainda';
-
-      if (!selectedFiles.length){
-        filesList.style.display = 'none';
-        btnProcess.disabled = true;
-        btnAddMore.style.display = 'none';
-        return;
-      }
-
-      filesList.style.display = 'block';
-      btnProcess.disabled = false;
-      btnAddMore.style.display = selectedFiles.length < MAX_FILES ? 'inline-flex' : 'none';
+      const hasFiles = selectedFiles.length > 0;
+      filesList.style.display = hasFiles ? 'block' : 'none';
+      btnProcess.disabled = !hasFiles;
+      filesCount.textContent = `${selectedFiles.length} arquivo${selectedFiles.length !== 1 ? 's' : ''} selecionado${selectedFiles.length !== 1 ? 's' : ''}`;
+      counterBadge.textContent = `${selectedFiles.length} / 8`;
 
       filesGrid.innerHTML = '';
       selectedFiles.forEach((file, idx) => {
@@ -384,10 +386,12 @@
 
         const meta = document.createElement('div');
         meta.className = 'file-meta';
+
         const name = document.createElement('div');
         name.className = 'file-name';
         name.title = file.name;
         name.textContent = file.name;
+
         const size = document.createElement('div');
         size.className = 'file-size';
         size.textContent = formatBytes(file.size);
@@ -432,7 +436,7 @@
       const fd = new FormData();
       selectedFiles.forEach((f, i) => fd.append(`file${i+1}`, f));
 
-      const webhookURL = 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/internação-recebimento';
+      const webhookURL = webhookURLs[selectedReportType];
 
       try {
         const resp = await fetch(webhookURL, { method: 'POST', body: fd });
@@ -444,13 +448,10 @@
 
         const blob = await resp.blob();
         
-        // ✅ SIMPLES: Apenas recebe o blob como é
         const url = URL.createObjectURL(blob);
         objectUrl = url;
         
-        // Usa o nome padrão que o n8n enviou (via Content-Disposition automático do navegador)
-        // Se quiser forçar um nome, pode colocar aqui
-        const fileName = 'arquivo_processado'; // O navegador vai adicionar a extensão correta
+        const fileName = 'arquivo_processado';
         
         processedFile = { 
           url, 
@@ -471,24 +472,33 @@
       }
     }
 
+    function showTypeSelection(){
+      typeScreen.style.display = 'block';
+      uploadScreen.style.display = 'none';
+      processingScreen.style.display = 'none';
+      resultsScreen.style.display = 'none';
+    }
+
+    function showUpload(){
+      typeScreen.style.display = 'none';
+      uploadScreen.style.display = 'block';
+      processingScreen.style.display = 'none';
+      resultsScreen.style.display = 'none';
+    }
+
     function showProcessing(){
-      document.getElementById('uploadScreen').style.display = 'none';
-      filesList.style.display = 'none';
+      typeScreen.style.display = 'none';
+      uploadScreen.style.display = 'none';
       processingScreen.style.display = 'block';
       resultsScreen.style.display = 'none';
     }
 
     function showResults(){
-      document.getElementById('uploadScreen').style.display = 'none';
+      typeScreen.style.display = 'none';
+      uploadScreen.style.display = 'none';
       processingScreen.style.display = 'none';
       resultsScreen.style.display = 'block';
       renderResults();
-    }
-
-    function showUpload(){
-      document.getElementById('uploadScreen').style.display = 'block';
-      processingScreen.style.display = 'none';
-      resultsScreen.style.display = 'none';
     }
 
     function renderResults(){
@@ -563,6 +573,7 @@
     window.addEventListener('beforeunload', () => cleanupProcessed());
 
     renderFilesList();
+    showTypeSelection();
   </script>
 </body>
 </html>
