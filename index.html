@@ -198,6 +198,16 @@
                 </div>
               </label>
             </div>
+            <div class="type-option">
+              <input type="radio" id="type-carga" name="reportType" value="carga">
+              <label for="type-carga" class="type-label">
+                <div class="type-radio"></div>
+                <div class="type-info">
+                  <h3>Carga Nacional</h3>
+                  <p>Recebimento e Entrega</p>
+                </div>
+              </label>
+            </div>
           </div>
           <div class="controls">
             <button id="btnContinue" class="btn primary">
@@ -320,7 +330,8 @@
 
     const webhookURLs = {
       recebido: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
-      entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos'
+      entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
+      carga: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/6f78435f-0228-4bb3-8a13-c542b1aaa434'
     };
 
     // Type selection
