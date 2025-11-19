@@ -61,23 +61,24 @@
 
     /* ===== SELETOR DE TIPO =====  */
     .type-selector{ 
-      display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;
+      display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;
     }
     .type-option{
       position:relative;
     }
     .type-option input{ position:absolute; opacity:0; cursor:pointer; }
     .type-label{
-      display:flex; align-items:center; gap:12px; padding:16px; border-radius:10px; border:2px solid var(--border);
-      background:var(--surface); cursor:pointer; transition:all .2s ease;
+      display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:18px; border-radius:12px; border:2px solid var(--border);
+      background:var(--surface); cursor:pointer; transition:all .2s ease; height:100%; justify-content:space-between;
     }
     .type-option input:checked + .type-label{
-      border-color:var(--primary); background:rgba(11,95,255,0.04); box-shadow:0 4px 12px rgba(11,95,255,0.1);
+      border-color:var(--primary); background:rgba(11,95,255,0.04); box-shadow:0 4px 16px rgba(11,95,255,0.12); transform:translateY(-2px);
     }
-    .type-radio{ width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; transition:all .2s ease; }
-    .type-option input:checked + .type-label .type-radio{ border-color:var(--primary); background:var(--primary); }
-    .type-info h3{ margin:0; font-weight:600; font-size:0.95rem; }
-    .type-info p{ margin:4px 0 0; color:var(--muted); font-size:0.85rem; }
+    .type-radio{ width:24px; height:24px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; transition:all .2s ease; }
+    .type-option input:checked + .type-label .type-radio{ border-color:var(--primary); background:var(--primary); box-shadow:0 0 0 4px rgba(11,95,255,0.1); }
+    .type-info{ width:100%; }
+    .type-info h3{ margin:0; font-weight:700; font-size:1rem; }
+    .type-info p{ margin:6px 0 0; color:var(--muted); font-size:0.85rem; line-height:1.4; }
 
     .upload-area{
       border-radius:12px; border:1px dashed var(--border); padding:30px; display:flex; gap:20px; align-items:center;
@@ -214,7 +215,17 @@
                 <div class="type-radio"></div>
                 <div class="type-info">
                   <h3>Exportação - Recebido</h3>
-                  <p>Processamento de exportações</p>
+                  <p>Processamento de exportações recebidas</p>
+                </div>
+              </label>
+            </div>
+            <div class="type-option">
+              <input type="radio" id="type-exportacao-entrega" name="reportType" value="exportacao-entrega">
+              <label for="type-exportacao-entrega" class="type-label">
+                <div class="type-radio"></div>
+                <div class="type-info">
+                  <h3>Exportação - Entrega</h3>
+                  <p>Processamento de exportações entregues</p>
                 </div>
               </label>
             </div>
@@ -342,7 +353,8 @@
       recebido: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
       entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
       carga: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/carga-nacional',
-      exportacao: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportação-recebido'
+      exportacao: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportação-recebido',
+      'exportacao-entrega': 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportação-entrega'
     };
 
     // Type selection
