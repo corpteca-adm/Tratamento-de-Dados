@@ -339,10 +339,10 @@
     let selectedReportType = 'recebido';
 
     const URLs = {
-      recebido: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportacao-recebido',
-      entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportacao-recebido',
-      carga: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportacao-recebido',
-      exportacao: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportacao-recebido'
+      recebido: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
+      entrega: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/processar-8-arquivos',
+      carga: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/carga-nacional',
+      exportacao: 'https://projeto-teste-n8n.ly7t0m.easypanel.host/webhook-test/exportação-recebido'
     };
 
     // Type selection
@@ -461,7 +461,7 @@
       // ✅ ADICIONA O TIPO DE RELATÓRIO
       fd.append('reportType', selectedReportType);
 
-      const webhookURL = webhookURLs[selectedReportType];
+      const webhookURL = URLs[selectedReportType];
 
       try {
         const resp = await fetch(webhookURL, { method: 'POST', body: fd });
