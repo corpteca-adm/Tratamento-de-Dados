@@ -379,6 +379,10 @@
       const files = Array.from(e.target.files).slice(0, 8 - selectedFiles.length);
       selectedFiles = [...selectedFiles, ...files];
       renderFilesList();
+      // CORREÇÃO: Limpar o input logo após o processamento da seleção.
+      // Isso garante que se o usuário selecionar o MESMO arquivo novamente,
+      // o evento 'change' será disparado.
+      fileInput.value = '';
     });
 
     uploadArea.addEventListener('dragover', (e) => {
@@ -400,6 +404,8 @@
 
     btnCancel.addEventListener('click', () => {
       selectedFiles = [];
+      // CORREÇÃO: Garantir que o input esteja limpo ao voltar/cancelar
+      fileInput.value = ''; 
       renderFilesList();
       showTypeSelection();
     });
@@ -409,6 +415,8 @@
     btnNewUpload.addEventListener('click', () => {
       selectedFiles = [];
       processedFile = null;
+      // CORREÇÃO: Garantir que o input esteja limpo ao iniciar novo envio
+      fileInput.value = '';
       renderFilesList();
       showTypeSelection();
     });
